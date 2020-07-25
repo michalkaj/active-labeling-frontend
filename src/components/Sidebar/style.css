@@ -1,0 +1,9 @@
+.sampleList {
+  background-color: darksalmon;
+  max-height: 10%;
+  overflow: auto;
+}
+
+#sidebar {
+  height: 100%;
+}
