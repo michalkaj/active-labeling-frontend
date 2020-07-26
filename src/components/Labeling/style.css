@@ -1,0 +1,7 @@
+.labelingWorkspace{
+  display: flex;
+  align-items: center;
+  background-color: darkgoldenrod;
+  height: 100%;
+  width: 100%;
+}

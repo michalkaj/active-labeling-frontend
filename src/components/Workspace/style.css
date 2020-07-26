@@ -1,4 +1,4 @@
-.container {
+.mainContainer {
   height: 90vh;
   background-color: blueviolet;
 }
@@ -6,11 +6,5 @@
 .workspace{
   background-color: cadetblue;
   height: 100%;
-}
-
-.labelingWorkspace{
-  display: flex;
-  align-items: center;
-  background-color: darkgoldenrod;
-  height: 100%;
+  width: 100%;
 }

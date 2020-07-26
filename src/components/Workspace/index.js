@@ -1,28 +1,26 @@
 import React, { Component } from 'react';
 import Topbar from '../Topbar/index'
-import Sidebar from '../Sidebar/index'
-import ImageClassification from '../ImageClassification/index'
 import Row from 'react-bootstrap/Row';
 import Container from 'react-bootstrap/Container';
 import Col from 'react-bootstrap/Col';
 import './style.css'
 import promptSamples from '../../utils/sampleLoading'
 import saveSamples from '../../utils/sampleSaving'
+import Labeling from '../Labeling/index';
 
 
 export default class Workspace extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      images: [],
-      selectedImageIndex: undefined,
-      labels: ['One', 'Two']
-    }
-  }
+   state = {
+    samples: [],
+    selectedImageIndex: undefined,
+    labels: ['One', 'Two']
+   }
 
   render() {
     return (
-      <Container bsStyle="default" style={{maxWidth:"95%"}}>
+      <Container 
+        className="mainContainer"
+        style={{maxWidth:"100%", maxHeight: "100%"}}>
         <Row>
           <Col>
             <Topbar 
@@ -32,21 +30,13 @@ export default class Workspace extends Component {
               onSave={this.onSave}/>
           </Col>
         </Row>
-        <Row bsStyle="default" className="workspace">
-          <Col xs={10} className="labelingWorkspace">
-            <ImageClassification 
-              imageSrc={this.currentImage().src}
-              labels={this.state.labels}
-              onLabelClick={this.onLabelClick}/>
-          </Col>
-          <Col>
-            <Sidebar
-              key={this.state.selectedImageIndex}
-              labels={this.state.labels}
-              selectedLabel={this.currentImage().label}
-              onLabelClick={this.onLabelClick}
-              samples={this.state.images}/>
-          </Col>
+        <Row className="workspace">
+          <Labeling 
+            samples={this.state.samples}
+            labels={this.state.labels}
+            currentSample={this.currentImage()}
+            onLabelClick={this.onLabelClick}
+          />
         </Row>
       </Container>
     )
@@ -56,24 +46,25 @@ export default class Workspace extends Component {
     const electron = window.require('electron');
     promptSamples({ electron })
       .then(result => {
+        const resultNotNull = Boolean(result) ? result : [];
         this.setState({
-          images: result,
-          selectedImageIndex: (result.length > 0) ? 0 : undefined
+          samples: resultNotNull,
+          selectedImageIndex: resultNotNull.length ? 0 : undefined
         })
       })
   }
 
   currentImage = () => {
     if (this.state.selectedImageIndex !== undefined)
-      return this.state.images[this.state.selectedImageIndex];
+      return this.state.samples[this.state.selectedImageIndex];
     else
       return {src: 'https://react.rocks/images/converted/react-svg-pan-zoom.jpg'};
   }
 
   onNext = () => {
-    const images = this.state.images;
+    const samples = this.state.samples;
     const index = this.state.selectedImageIndex;
-    if (index < images.length - 1)
+    if (index < samples.length - 1)
       this.setState({
         selectedImageIndex: this.state.selectedImageIndex + 1,
       })
@@ -96,7 +87,7 @@ export default class Workspace extends Component {
 
   onSave = () => {
     const electron = window.require('electron');
-    const samples = JSON.stringify(this.state.images);
+    const samples = JSON.stringify(this.state.samples);
     saveSamples(samples, electron);
   }
 }

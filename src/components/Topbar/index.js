@@ -17,7 +17,6 @@ export default function Topbar(props) {
         <Nav.Item>
           <Button onClick={props.onSave}>Save</Button>
         </Nav.Item>
-
       </Nav>
       <Nav className="ml-auto">
         <Nav.Item>

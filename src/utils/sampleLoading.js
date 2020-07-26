@@ -1,5 +1,8 @@
-const convertToSamplesObject = (fp) => {
-  const sample = { src: `file:///${fp}` };
+const convertToSamplesObject = (fp, path) => {
+  const sample = {
+     src: `file:///${fp}`,
+     name: path.basename(fp)
+  };
   const ext = fp.split(".").slice(-1)[0].toLowerCase()
 
   if (["png", "jpg", "jpeg"].includes(ext)) {
@@ -28,7 +31,7 @@ async function promptSamples({ electron }) {
   return (await fs.promises.readdir(dirPath))
     .filter((fn) => fn.includes("."))
     .map((fileName) => path.join(dirPath, fileName))
-    .map(convertToSamplesObject)
+    .map((fp) => convertToSamplesObject(fp, path))
     .filter(Boolean)
     .filter(o => { return o.type === 'image' })
 }
