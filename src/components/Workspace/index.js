@@ -7,13 +7,14 @@ import './style.css'
 import promptSamples from '../../utils/sampleLoading'
 import saveSamples from '../../utils/sampleSaving'
 import Labeling from '../Labeling/index';
+import Setup from '../Setup/index';
 
 
 export default class Workspace extends Component {
    state = {
     samples: [],
-    selectedImageIndex: undefined,
-    labels: ['One', 'Two']
+    labels: ['One', 'Two'],
+    currentWindow: 'setup'
    }
 
   render() {
@@ -23,23 +24,33 @@ export default class Workspace extends Component {
         style={{maxWidth:"100%", maxHeight: "100%"}}>
         <Row>
           <Col>
-            <Topbar 
+            <Topbar
+              id="topbar" 
               onLoadImages={this.onLoadImages}
-              onNext={this.onNext}
-              onPrev={this.onPrev}
+              onSetup={() => this.setState({currentWindow: 'setup'})}
+              onLabeling={() => this.setState({currentWindow: 'labeling'})}
               onSave={this.onSave}/>
           </Col>
         </Row>
         <Row className="workspace">
-          <Labeling 
-            samples={this.state.samples}
-            labels={this.state.labels}
-            currentSample={this.currentImage()}
-            onLabelClick={this.onLabelClick}
-          />
+          {this.renderWindow()}
         </Row>
       </Container>
     )
+  }
+
+  renderWindow = () => {
+    switch (this.state.currentWindow) {
+      case 'setup':
+        return <Setup/>;
+      case 'labeling':
+        return <Labeling 
+                  samples={this.state.samples}
+                  labels={this.state.labels}
+                />;
+      default:
+        break
+    }
   }
 
   onLoadImages = () => {
@@ -49,40 +60,8 @@ export default class Workspace extends Component {
         const resultNotNull = Boolean(result) ? result : [];
         this.setState({
           samples: resultNotNull,
-          selectedImageIndex: resultNotNull.length ? 0 : undefined
         })
       })
-  }
-
-  currentImage = () => {
-    if (this.state.selectedImageIndex !== undefined)
-      return this.state.samples[this.state.selectedImageIndex];
-    else
-      return {src: 'https://react.rocks/images/converted/react-svg-pan-zoom.jpg'};
-  }
-
-  onNext = () => {
-    const samples = this.state.samples;
-    const index = this.state.selectedImageIndex;
-    if (index < samples.length - 1)
-      this.setState({
-        selectedImageIndex: this.state.selectedImageIndex + 1,
-      })
-  }
-
-  onPrev = () => {
-    const index = this.state.selectedImageIndex;
-    if (index > 0)
-      this.setState({
-        selectedImageIndex: this.state.selectedImageIndex - 1,
-      })
-  }
-
-  onLabelClick = (label, nextImage=false) => {
-    const image = this.currentImage();
-    image.label = label; 
-    if (nextImage)
-      this.onNext();
   }
 
   onSave = () => {

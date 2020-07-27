@@ -1,11 +1,16 @@
 import React from 'react';
 import Select from 'react-select';
 import SampleList from '../SampleList/index'
+import {Button} from 'react-bootstrap';
 import './style.css'
 
 export default function Sidebar(props) {
   return (
     <div id="sidebar">
+      <div>
+        <Button onClick={props.onPrev}>Prev</Button>
+        <Button onClick={props.onNext}>Next</Button>
+      </div>
       <div>
         <Select
           autoFocus="true"
