@@ -16,6 +16,7 @@ export default function Sidebar(props) {
           autoFocus="true"
           placeholder="Select label..."
           options={props.labels.map(labelToOption)}
+          isMulti={props.multiclass}
           value={props.selectedLabel ? labelToOption(props.selectedLabel) : undefined}
           onChange={(selectedLabel) => {
             props.onLabelClick(selectedLabel.label);

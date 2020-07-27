@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
+import './style.css'
 import Topbar from '../Topbar/index'
 import Row from 'react-bootstrap/Row';
 import Container from 'react-bootstrap/Container';
 import Col from 'react-bootstrap/Col';
-import './style.css'
 import promptSamples from '../../utils/sampleLoading'
 import saveSamples from '../../utils/sampleSaving'
 import Labeling from '../Labeling/index';
@@ -13,8 +13,11 @@ import Setup from '../Setup/index';
 export default class Workspace extends Component {
    state = {
     samples: [],
-    labels: ['One', 'Two'],
-    currentWindow: 'setup'
+    currentWindow: 'setup',
+    options: {
+      labels: ['test one', 'test two'],
+      multiclass: false
+    }
    }
 
   render() {
@@ -42,11 +45,14 @@ export default class Workspace extends Component {
   renderWindow = () => {
     switch (this.state.currentWindow) {
       case 'setup':
-        return <Setup/>;
+        return <Setup 
+                  onSaveOptions={this.onSaveOptions}
+                  options={this.state.options}
+                />;
       case 'labeling':
         return <Labeling 
                   samples={this.state.samples}
-                  labels={this.state.labels}
+                  options={this.state.options}
                 />;
       default:
         break
@@ -68,5 +74,11 @@ export default class Workspace extends Component {
     const electron = window.require('electron');
     const samples = JSON.stringify(this.state.samples);
     saveSamples(samples, electron);
+  }
+
+  onSaveOptions = (options) => {
+    this.setState({
+      options: options
+    })
   }
 }

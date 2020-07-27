@@ -18,18 +18,21 @@ export default class Labeling extends Component {
   }
 
   render() {
+    console.log(this.props.options);
     return (
       <>
         <Col xs={10} className="labelingWorkspace">
         <ImageClassification 
             imageSrc={this.currentSample().src}
-            labels={this.props.labels}
+            labels={this.props.options.labels}
+            multiclass={this.props.options.multiclass}
             onLabelClick={this.onLabelClick}/>
         </Col>
         <Col>
           <Sidebar
             key={this.currentSample().src}
-            labels={this.props.labels}
+            labels={this.props.options.labels}
+            multiclass={this.props.options.multiclass}
             samples={this.props.samples}
             selectedLabel={this.currentSample().label}
             onLabelClick={this.onLabelClick}
