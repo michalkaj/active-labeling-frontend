@@ -1,82 +1,106 @@
-import React, { Component } from 'react';
-import {Col, Form, InputGroup, Button} from 'react-bootstrap';
-import './style.css'
+import React, {Component} from 'react';
+import 'react-tagsinput/react-tagsinput.css'
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
+import Grid from '@material-ui/core/Grid';
+import TagsInput from "react-tagsinput";
+
+const styles = {
+  Form: {
+    width: "100%",
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  }
+}
 
 export default class Setup extends Component {
-  handleAddLabel = (event) => {
-    const [lastItem] = this.state.inputLabels.slice(-1);
-    const lastItemId = lastItem.props.id;
-    if (event.target.id === lastItemId) {
-      this.setState({
-        inputLabels: [...this.state.inputLabels, this.createNewInput(parseInt(lastItemId) + 1)]
-      })
+  constructor(props) {
+    super(props)
+    props.fetchConfig();
+    this.state = {
+      multiclass: props.multiclass,
+      labels: props.labels,
+      activeUrl: props.activeUrl
     }
   }
 
-  handleFocusOut = (event) => {
-    const [lastItem] = this.state.inputLabels.slice(-1);
-    const value = event.target.value.trim() || "";
-    if (value.length === 0 && event.target.id !== lastItem.props.id) { 
-      // const inputLabels = this.state.inputLabels;
-      // const id = parseInt(event.target.id);
-      // console.log(id);
-      // this.setState({
-      //   inputLabels: [...inputLabels.slice(0, id), ...inputLabels.slice(id + 1)]
-      // });
-    } else {
-      this.setState({
-        labels: new Set([...this.state.labels, value])
-      })
-    }
+  componentDidMount() {
+    this.props.fetchConfig()
   }
 
-  createNewInput = (id) => {
-    return <Form.Control id={id + ''} type="text" placeholder="Label..." 
-      onFocus={this.handleAddLabel}
-      onBlur={this.handleFocusOut}/>
+  handleAddLabelTag = (labels) => {
+    this.setState({labels});
   }
 
-  state = {
-    inputLabels: [this.createNewInput(0)],
-    multiclass: false,
-    activeUrl: undefined,
-    labels: new Set()
+  handleUrlChange = (event) => {
+    this.setState({activeUrl: event.target.value});
+  }
+
+  handleMulticlassRadioChange = (event, value) => {
+    this.setState({multiclass: value});
   }
 
   render() {
     return (
-      <>
-      <Col>
-        <label for="active-url">Active learning URL</label>
-        <Form.Control name="active-url" type="text" placeholder="Url..." onFocus={this.handleAddLabel}/>
-      </Col>
-      <Col>
-      <Form>
-        <div id="multiclass-radio">
-          <Form.Text>Multiclass</Form.Text>
-          <InputGroup classname="mb-3">
-            <Form.Check inline label="Yes" type="radio" id={"multiclass-yes"} name="multiclass"/>
-            <Form.Check inline label="No" type="radio" id={"multiclass-no"} name="multiclass" checked/>
-          </InputGroup>
-          <Form.Text>Labels</Form.Text>
-        </div>
-        <div id="labels-input-list">
-          <Form.Group>
-            {this.state.inputLabels}
-          </Form.Group>
-        </div>
-        <Button onClick={this.onSaveOptions}>Save</Button>
-      </Form>
-    </Col>
-    </>
+      <Grid
+        item
+        xs={12}
+        style={styles.Form}
+        container
+        direction="column"
+      >
+        <Grid item>
+          <TextField
+            value={this.state.activeUrl}
+            variant="outlined"
+            margin="normal"
+            fullWidth
+            id="activeUrl"
+            label="Active learning server url"
+            name="activeUrl"
+            onChange={this.handleUrlChange}
+          />
+        </Grid>
+        <Grid item>
+          <FormControlLabel
+            control={<Checkbox value="remember" color="primary" />}
+            label="Multiclass"
+            onChange={this.handleMulticlassRadioChange}
+          />
+        </Grid>
+
+        <Grid item>
+          <TagsInput
+            value={this.state.labels}
+            onChange={this.handleAddLabelTag}
+            onlyUnique="true"
+            addOnBlur="true"
+            addOnPaste="true" />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={this.onSaveOptions}>Save settings</Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={this.props.onLoadImages}>Load images</Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={this.props.onSave}>Save labels</Button>
+        </Grid>
+      </Grid>
     )
   }
 
   onSaveOptions = () => {
-    this.props.onSaveOptions({
-      multiclass: this.state.multiclass,
-      activeUrl: this.state.activeUrl,
-      labels: Array.from(this.state.labels)
-    })
+    this.props.onSaveOptions(
+      this.state.multiclass,
+      this.state.labels,
+      this.state.activeUrl
+    )
   }
 }

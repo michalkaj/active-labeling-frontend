@@ -1,33 +1,63 @@
 import React from 'react';
 import Select from 'react-select';
-import SampleList from '../SampleList/index'
-import {Button} from 'react-bootstrap';
-import './style.css'
+import Button from "@material-ui/core/Button";
+import Grid from "@material-ui/core/Grid";
+import LinearProgress from "@material-ui/core/LinearProgress";
+
+const styles = {
+  Select: {
+    width: "90%",
+  }
+}
 
 export default function Sidebar(props) {
   return (
-    <div id="sidebar">
-      <div>
-        <Button onClick={props.onPrev}>Prev</Button>
-        <Button onClick={props.onNext}>Next</Button>
-      </div>
-      <div>
+    <Grid
+      container
+      direction="column"
+      spacing={2}
+    >
+      <Grid item container justify="space-evenly">
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={props.onPrev}>Prev</Button>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={props.onNext}>Next</Button>
+      </Grid>
+      <Grid
+        container item
+        alignItems="center"
+        style={styles.Select}
+      >
         <Select
           autoFocus="true"
           placeholder="Select label..."
           options={props.labels.map(labelToOption)}
           isMulti={props.multiclass}
           value={props.selectedLabel ? labelToOption(props.selectedLabel) : undefined}
-          onChange={(selectedLabel) => {
-            props.onLabelClick(selectedLabel.label);
+          onChange={(selectedItems) => {
+            selectedItems = (selectedItems === null) ? [] : selectedItems;
+            props.onLabelClick(selectedItems.map(i => i.label));
           }}
         />
-        </div>
-        <div class="sampleList">
-          <SampleList 
-            samples={props.samples}/>
-        </div>
-    </div>
+        </Grid>
+      <Grid item>
+        <LinearProgress variant="determinate" value={props.progress} />
+      </Grid>
+      <Grid item>
+        <Button
+          variant="contained"
+          color="primary"
+          disabled={props.progress !== 100}
+          onClick={props.onTeach}
+        >
+          Teach
+        </Button>
+      </Grid>
+    </Grid>
     )
 }
 

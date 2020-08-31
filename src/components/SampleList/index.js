@@ -1,7 +1,5 @@
-
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import ReactList from 'react-list';
-import './style.css';
 
 export default class SampleList extends Component {
   render() {
@@ -16,7 +14,7 @@ export default class SampleList extends Component {
   renderSample = (index, key) => {
     const sample = this.props.samples[index];
     return (
-      <div 
+      <div
         key={key}
         class="sample">
         <img src={sample.src}/>

@@ -1,46 +1,70 @@
 import React, { Component } from 'react';
-import Sidebar from '../Sidebar/index'
-import ImageClassification from '../ImageClassification/index'
-import Col from 'react-bootstrap/Col';
-import './style.css'
+import Sidebar from 'components/Sidebar'
+import ImageClassification from 'components/ImageClassification'
+import Grid from "@material-ui/core/Grid";
+
+const styles = {
+  Sidebar: { backgroundColor: "lightblue"},
+  ImageClassification : {
+    backgroundColor: "blue",
+    height: '100%'
+  },
+  Workspace: {
+    backgroundColor: "orange",
+    height: "100%"
+  }
+}
 
 export default class Labeling extends Component {
-  state = {
-    selectedImageIndex: undefined,
-   }
+  constructor(props) {
+    super(props);
+    this.state = {
+      selectedImageIndex: (props.samples.length !== 0) ? 0 : undefined,
+      labeledInBatch: 0,
+      progress: 0
+    };
+  }
+
 
   componentDidUpdate(prevProps) {
     if (this.props.samples !== prevProps.samples) {
       this.setState({
-        selectedImageIndex: 0
+        selectedImageIndex: 0,
+        labeledInBatch: 0
       })
     }
   }
 
   render() {
-    console.log(this.props.options);
     return (
-      <>
-        <Col xs={10} className="labelingWorkspace">
-        <ImageClassification 
-            imageSrc={this.currentSample().src}
-            labels={this.props.options.labels}
-            multiclass={this.props.options.multiclass}
-            onLabelClick={this.onLabelClick}/>
-        </Col>
-        <Col>
+      <Grid container
+            style={styles.Workspace}
+            direction="row"
+      >
+        <Grid item
+              sm={9}
+              style={styles.ImageClassification}>
+          <ImageClassification
+              imageSrc={this.currentSample().src}
+              labels={this.props.labels}
+              multiclass={this.props.multiclass}
+              onLabelClick={this.onLabelClick}/>
+        </Grid>
+        <Grid item
+              sm={3} style={styles.Sidebar}>
           <Sidebar
-            key={this.currentSample().src}
-            labels={this.props.options.labels}
-            multiclass={this.props.options.multiclass}
-            samples={this.props.samples}
+            key={this.currentSample().name}
+            labels={this.props.labels}
+            multiclass={this.props.multiclass}
             selectedLabel={this.currentSample().label}
             onLabelClick={this.onLabelClick}
             onPrev={this.onPrev}
             onNext={this.onNext}
+            onTeach={this.props.onTeach}
+            progress={this.state.progress}
             />
-        </Col>
-      </>
+        </Grid>
+      </Grid>
     )
   }
 
@@ -51,13 +75,19 @@ export default class Labeling extends Component {
       return {src: 'https://react.rocks/images/converted/react-svg-pan-zoom.jpg'};
   }
 
+  computeProgress = (labeledInBatch) => {
+    return (labeledInBatch / this.props.samples.length) * 100;
+  }
+
   onNext = () => {
     const samples = this.props.samples;
     const index = this.state.selectedImageIndex;
-    if (index < samples.length - 1)
+    if (index < samples.length - 1){
       this.setState({
         selectedImageIndex: this.state.selectedImageIndex + 1,
       })
+    }
+
   }
 
   onPrev = () => {
@@ -68,9 +98,22 @@ export default class Labeling extends Component {
       })
   }
 
-  onLabelClick = (label, nextImage=false) => {
-    const image = this.currentSample();
-    image.label = label; 
+
+  onLabelClick = (labels, nextImage=false) => {
+    const sample = this.currentSample();
+    var labeledInBatch = this.state.labeledInBatch;
+    console.log(sample);
+    if (labels.length === 0) {
+      labeledInBatch -= 1;
+    } else if (sample.labels === undefined || sample.labels.length === 0) {
+      labeledInBatch += 1;
+    }
+    sample.labels = labels;
+
+    this.setState({
+      labeledInBatch: labeledInBatch,
+      progress: this.computeProgress(labeledInBatch)
+    });
     if (nextImage)
       this.onNext();
   }

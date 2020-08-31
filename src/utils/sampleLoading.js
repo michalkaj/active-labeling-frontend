@@ -1,7 +1,8 @@
 const convertToSamplesObject = (fp, path) => {
   const sample = {
      src: `file:///${fp}`,
-     name: path.basename(fp)
+     name: path.basename(fp),
+     labels: []
   };
   const ext = fp.split(".").slice(-1)[0].toLowerCase()
 
@@ -35,27 +36,5 @@ async function promptSamples({ electron }) {
     .filter(Boolean)
     .filter(o => { return o.type === 'image' })
 }
-
-// function get_files(filepath, extensions = null, recursive = false, acc_path = '') {
-//     if (acc_path === '') 
-//         acc_path = filepath;
-//     else
-//         acc_path = path.join(acc_path, filepath);
-
-//     var result = [];
-//     electronFs.readdirSync(acc_path).forEach(file => {
-//         var stat = electronFs.statSync(path.join(acc_path, file));
-
-//         if (recursive && stat.isDirectory()) {
-//             result = result.concat(get_files(file, extensions, recursive, acc_path))
-//         } else if (extensions !== null && extensions.has(path.extname(file))) {
-//             result.push(path.join(acc_path, file));
-//         }
-//     });
-
-//     return result.map(convertToSamplesObject);
-// }
-
-// export default get_files
 
 export default promptSamples;
