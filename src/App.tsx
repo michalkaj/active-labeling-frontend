@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import Workspace from './components/Workspace/index';
+import Workspace from './components/Workspace';
 
 function App() {
   return (
