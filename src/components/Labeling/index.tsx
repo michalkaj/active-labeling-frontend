@@ -8,19 +8,19 @@ import {styled} from "@material-ui/styles";
 
 
 const ImageClassificationGrid = styled(Grid)({
-    backgroundColor: "blue",
     height: '100%'
 })
 
 const WorkspaceGrid = styled(Grid)({
-    backgroundColor: "orange",
-    height: '100%'
+    backgroundColor: '#eceff1',
+    height: '100%',
 })
 
 type Props = {
     onPrev: (event: React.MouseEvent<HTMLButtonElement>) => void,
     onNext: (event: React.MouseEvent<HTMLButtonElement>) => void,
     onTeach: (event: React.MouseEvent<HTMLButtonElement>) => void,
+    onSelectSample : (index: number) => void,
     onLabelClick: (labels: Array<string>) => void,
     currentSample: Sample,
     samples: Array<Sample>,
@@ -50,10 +50,12 @@ const Labeling = (props: Props) => {
                     multiclass={props.config.multiclass}
                     selectedLabels={props.currentSample.labels}
                     onLabelClick={props.onLabelClick}
+                    onSelectSample={props.onSelectSample}
                     onPrev={props.onPrev}
                     onNext={props.onNext}
                     onTeach={props.onTeach}
                     progress={computeProgress(props.labeledInBatch, props.samples)}
+                    samples={props.samples}
                 />
             </Grid>
         </WorkspaceGrid>

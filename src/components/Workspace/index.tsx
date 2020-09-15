@@ -9,18 +9,20 @@ import Sample from "../../model/sample";
 import ActiveLearning from "../../model/activeLearning";
 import Config from "../../model/config";
 import {styled} from "@material-ui/styles";
+import Progress from "../Progress";
 
 
 const Root = styled('div')({
     flexGrow: 1,
     margin: 0,
     padding: 0,
-    height: 'calc(100% - 48px)'
+    height: 'calc(100% - 48px)',
+    backgroundColor: 'red'
 });
 
 const LabelingPanel = styled(TabPanel)({
-    backgroundColor: "yellow",
-    height: "100%"
+    backgroundColor: '#F5F5F5',
+    height: 'calc(100% - 48px)'
 })
 
 
@@ -31,13 +33,20 @@ export default class Workspace extends Component {
         tab: 0,
         selectedImageIndex: null,
         labeledInBatch: 0,
-        config: new Config()
+        metrics: [],
+        config: {
+            'dataset_name': 'dataset',
+            'allowed_labels': [],
+            'multiclass': false,
+            'active_url': 'http://localhost:5000/',
+            'batch_size': 10
+        }
     }
     activeLearning: ActiveLearning;
 
     constructor(props: any) {
         super(props);
-        this.activeLearning = new ActiveLearning(this.state.config.activeUrl);
+        this.activeLearning = new ActiveLearning();
     }
 
     render() {
@@ -58,12 +67,10 @@ export default class Workspace extends Component {
                     index={0}
                 >
                     <Setup
-                        // onSaveOptions={this.onSaveOptions}
-                        onLoadImages={this.onLoadImages}
+                        onLoadImages={this.onFetchImages}
                         config={this.state.config}
                         fetchConfig={this.fetchConfig}
-                        onSave={() => {
-                        }}
+                        saveConfig={this.saveConfig}
                     />
                 </LabelingPanel>
                 <LabelingPanel
@@ -73,6 +80,7 @@ export default class Workspace extends Component {
                     <Labeling
                         onPrev={this.onPrev}
                         onNext={this.onNext}
+                        onSelectSample={this.onSelectSample}
                         onLabelClick={this.onLabelClick}
                         onTeach={this.onTeach}
                         currentSample={this.getCurrentSample()}
@@ -85,6 +93,10 @@ export default class Workspace extends Component {
                     value={this.state.tab}
                     index={2}
                 >
+                    <Progress
+                        fetchMetrics={this.fetchMetrics}
+                        metrics={this.state.metrics}
+                    />
                 </LabelingPanel>
             </Root>
         )
@@ -94,28 +106,45 @@ export default class Workspace extends Component {
         this.setState({tab: value})
     }
 
-    onLoadImages = () => {
+    onFetchImages = () => {
         this.activeLearning
-            .fetchSamples()
+            .fetchSamples(this.state.config.active_url, this.state.config.batch_size)
             .then(samples => {
                 this.setState({
                     samples: samples,
-                    selectedImageIndex: 0
+                    selectedImageIndex: 0,
+                    labeledInBatch: 0
                 });
             });
     }
 
     fetchConfig = () => {
         this.activeLearning
-            .fetchConfig()
+            .fetchConfig(this.state.config.active_url)
             .then(config => {
+                console.log(config);
+                console.log('cc', Boolean(config.multiclass));
                 this.setState({config})
+            });
+    }
+
+    fetchMetrics= () => {
+        console.log('fetching metrics')
+        this.activeLearning
+            .fetchMetrics(this.state.config.active_url)
+            .then(metrics => {
+                this.setState({metrics})
             });
     }
 
     onTeach = () => {
         this.activeLearning
-            .teach(this.state.samples);
+            .teach(this.state.config.active_url, this.state.samples)
+            .then(result => {
+                if (result == 200) {
+                    this.onFetchImages();
+                }
+            });
     }
 
     onNext = () => {
@@ -128,7 +157,10 @@ export default class Workspace extends Component {
                 selectedImageIndex: index + 1,
             })
         }
+    }
 
+    onSelectSample = (index: number) => {
+        this.setState({selectedImageIndex: index})
     }
 
     onPrev = () => {
@@ -141,7 +173,7 @@ export default class Workspace extends Component {
             })
     }
 
-    onLabelClick = (labels: Array<string>, nextImage: boolean = false) => {
+    onLabelClick = (labels: Array<string>) => {
         const sample = this.getCurrentSample();
         var labeledInBatch = this.state.labeledInBatch;
         if (labels.length === 0) {
@@ -155,15 +187,24 @@ export default class Workspace extends Component {
             labeledInBatch: labeledInBatch,
             selectedLabels: labels
         });
-        if (nextImage)
+        if (!this.state.config.multiclass)
             this.onNext();
     }
 
     getCurrentSample = (): Sample => {
         const index = this.state.selectedImageIndex;
         if (index == null) {
-            return new Sample('???', [], 0);
+            return new Sample('???', '???', []);
         }
         return this.state.samples[index];
+    }
+
+    saveConfig = (name: string, value: any): void => {
+        console.log('saving', name, value);
+        this.setState((prevState) => {
+            let config: Config = Object.assign({}, this.state.config);
+            config[name] = value;
+            return {config};
+        })
     }
 }

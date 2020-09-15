@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import 'react-tagsinput/react-tagsinput.css'
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
@@ -8,95 +8,151 @@ import Grid from '@material-ui/core/Grid';
 import TagsInput from "react-tagsinput";
 import Config from "../../model/config";
 import {styled} from "@material-ui/styles";
+import {
+    FormControl,
+    FormLabel,
+    Input,
+    Radio,
+    RadioGroup,
+    Slider,
+    Switch,
+    Typography
+} from "@material-ui/core";
+import 'App.css'
 
 
 const MainForm = styled(Grid)({
-    width: "100%",
+    width: '50%',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
 });
 
+const BatchSizeInput = styled(Input)({
+    width: '50px'
+});
+
+const TagsInputGrid = styled(Grid)({
+    height: '100px'
+});
+
 type Props = {
     onLoadImages: () => void,
     fetchConfig: () => void,
-    onSave: () => void,
+    saveConfig: (name: string, value: any) => void,
     config: Config
 }
 
 
 const Setup = (props: Props) => {
-    const [config, setConfig] = useState(props.config);
+    useEffect(() => {
+        props.fetchConfig();
+    }, []);
 
     return (
-        <MainForm
-            item
-            xs={12}
-            // style={styles.Form}
-            container
-            direction="column"
-        >
-            <Grid item>
+        <MainForm item>
+            <Grid container>
+                <Typography gutterBottom>Dataset name</Typography>
                 <TextField
-                    value={config.activeUrl}
-                    variant="outlined"
-                    margin="normal"
+                    value={props.config.dataset_name}
+                    margin='normal'
                     fullWidth
-                    id="activeUrl"
-                    label="Active learning server url"
-                    name="activeUrl"
-                    onChange={(event) => setConfig((prevState) => handleUrlChange(event, prevState))}
-                />
-            </Grid>
-            <Grid item>
-                <FormControlLabel
-                    control={<Checkbox value="remember" color="primary"/>}
-                    label="Multiclass"
-                    onChange={(event, value) => setConfig((prevState) => handleMulticlassRadioChange(event, value, prevState))}
+                    name='datasetName'
+                    onChange={(event) => {props.saveConfig('dataset_name', event.target.value)}}
                 />
             </Grid>
 
-            <Grid item>
-                <TagsInput
-                    value={config.allowed_labels}
-                    onChange={(labels) => setConfig((prevState) => handleAddLabelTag(labels, prevState))}
-                    onlyUnique={true}
-                    addOnBlur={true}
-                    addOnPaste={true}/>
+            <Grid container>
+                <FormControl component="fieldset">
+                    <Typography gutterBottom>Allow multiple labels per image?</Typography>
+                  <RadioGroup row name="multiclass" value={props.config.multiclass}
+                              onChange={(event) => props.saveConfig('multiclass', event.target.value)}>
+                    <FormControlLabel value="true" control={<Radio />} label="Yes" />
+                    <FormControlLabel value="false" control={<Radio />} label="No" />
+                  </RadioGroup>
+                </FormControl>
+            </Grid>
+            <Grid container>
+                <Typography gutterBottom>Active learning URL</Typography>
+                <TextField
+                    value={props.config.active_url}
+                    margin='normal'
+                    fullWidth
+                    name='activeUrl'
+                    onChange={(event) => props.saveConfig('active_url', event.target.value)}
+                />
+            </Grid>
+
+            {/*<Grid container>*/}
+            {/*    <FormControlLabel*/}
+            {/*        control={*/}
+            {/*            <Switch*/}
+            {/*                checked={Boolean(props.config.multiclass)}*/}
+            {/*                onChange={(_, value) => props.saveConfig('multiclass', value)}*/}
+            {/*            />}*/}
+            {/*        label='Allow multiple labels per image?'*/}
+            {/*        labelPlacement='start'*/}
+            {/*    />*/}
+            {/*</Grid>*/}
+
+            <Grid container>
+                <Grid>
+                    <Typography gutterBottom>
+                        Add labels
+                    </Typography>
+                </Grid>
+                <TagsInputGrid container>
+                    <TagsInput
+                        value={props.config.allowed_labels}
+                        onChange={(labels) => props.saveConfig('allowed_labels', labels)}
+                        onlyUnique={true}
+                        addOnBlur={true}
+                        addOnPaste={true}/>
+                </TagsInputGrid>
+            </Grid>
+            <Grid container>
+                <Grid>
+                    <Typography gutterBottom>
+                        Batch size
+                    </Typography>
+                </Grid>
+                <Grid container spacing={2} alignItems="center">
+                    <Grid item xs>
+                        <Slider
+                            defaultValue={10}
+                            step={5}
+                            marks
+                            min={5}
+                            max={100}
+                            onChange={(_, value) => props.saveConfig('batch_size', value)}
+                        />
+                    </Grid>
+                    <Grid item>
+                        <BatchSizeInput
+                            value={props.config.batch_size}
+                            margin="dense"
+                            inputProps={{
+                                step: 10,
+                                min: 0,
+                                max: 100,
+                                type: 'number',
+                            }}
+                        />
+                    </Grid>
+                </Grid>
+            </Grid>
+            <Grid container justify={"space-evenly"}>
                 <Button
                     variant="contained"
-                    color="primary">
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={props.onLoadImages}>Load images</Button>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={props.onSave}>Save labels</Button>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={props.fetchConfig}>Fetch config</Button>
-                </Button>
+                    color="primary"
+                    onClick={props.onLoadImages}>Load images</Button>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={props.fetchConfig}>Fetch config</Button>
             </Grid>
         </MainForm>
     )
 }
-
-
-const handleAddLabelTag = (labels: Array<string>, prevState: Config) => {
-    return new Config(labels, prevState.multiclass, prevState.activeUrl);
-}
-
-const handleUrlChange = (event: any, prevState: Config) => {
-    return new Config(prevState.allowed_labels, prevState.multiclass, event.target.value);
-}
-
-const handleMulticlassRadioChange = (event: React.ChangeEvent<{}>,
-                                     value: boolean, prevState: Config) => {
-    return new Config(prevState.allowed_labels, value, prevState.activeUrl);
-}
-
 
 export default Setup;

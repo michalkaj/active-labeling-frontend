@@ -1,31 +1,37 @@
 import convertSample from "../utils/sampleDecoding";
 import Sample from "./sample";
 import Config from "./config";
+import Metric from "./metric";
 
 export default class ActiveLearning {
-    private url: string;
     private QUERY = 'query';
     private CONFIG = 'config';
-    private TEACH = 'annotate';
+    private ANNOTATE = 'annotate';
+    private TEACH = 'teach';
+    private METRICS = 'metrics';
 
-    constructor(url: string) {
-        this.url = url;
-    }
-
-    fetchSamples = async (): Promise<Array<Sample>> => {
-        const response = await fetch(this.url + this.QUERY);
+    fetchSamples = async (url: string, batchSize: number): Promise<Array<Sample>> => {
+        const response = await fetch(url + this.QUERY + `?batch_size=${batchSize}`);
         const responseJson = await response.json();
         return responseJson.samples.map(convertSample);
     }
 
-
-    fetchConfig = async (): Promise<Config> => {
-        const response = await fetch(this.url + this.CONFIG);
-        const {labels, multiclass} = await response.json();
-        return new Config(labels, multiclass);
+    fetchConfig = async (url: string): Promise<Config> => {
+        const response = await fetch(url + this.CONFIG);
+        const config = await response.json();
+        config.multiclass = config.multiclass === 'true';
+        return config
     }
 
-    onSaveOptions = async (config: Config): Promise<number> => {
+    fetchMetrics = async (url: string): Promise<Metric> => {
+        const response = await fetch(url + this.METRICS);
+        const response_json = await response.json();
+        console.log('metric', response_json);
+        return response_json['metrics'].map((m: any) =>
+            new Metric(m['metric_name'], m['metric_value'], m['num_samples']))
+    }
+
+    onSaveOptions = async (url:string, config: Config): Promise<number> => {
         const configJson = JSON.stringify(config);
 
         const requestOptions = {
@@ -33,18 +39,26 @@ export default class ActiveLearning {
             headers: {'Content-Type': 'application/json'},
             body: configJson
         };
-        const response = await fetch(this.url + this.CONFIG, requestOptions);
+        const response = await fetch(url + this.CONFIG, requestOptions);
         return response.status;
     }
 
-    teach = async (samples: Array<Sample>): Promise<number> => {
-        const samplesJson = JSON.stringify({'samples': samples});
+    teach = async (url: string, samples: Array<Sample>): Promise<number> => {
+        const samplesJson = JSON.stringify({'samples': samples.map(s => s.toDict())});
+        console.log(samplesJson);
         const requestOptions = {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: samplesJson
         };
-        const response = await fetch(this.url + this.TEACH, requestOptions);
-        return response.status;
+        fetch(url + this.ANNOTATE, requestOptions)
+            .then(result => {
+                if (result.ok) {
+                    return fetch(url + this.TEACH).then(r => r.status);
+                } else {
+                    throw new Error('Something went wrong')
+                }
+            })
+        return 200
     }
 }
