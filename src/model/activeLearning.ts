@@ -2,6 +2,7 @@ import convertSample from "../utils/sampleDecoding";
 import Sample from "./sample";
 import Config from "./config";
 import Metric from "./metric";
+import Stats from "./metric";
 
 export default class ActiveLearning {
     private QUERY = 'query';
@@ -23,12 +24,12 @@ export default class ActiveLearning {
         return config
     }
 
-    fetchMetrics = async (url: string): Promise<Metric> => {
+    fetchStats = async (url: string): Promise<Stats> => {
         const response = await fetch(url + this.METRICS);
         const response_json = await response.json();
-        console.log('metric', response_json);
-        return response_json['metrics'].map((m: any) =>
-            new Metric(m['metric_name'], m['metric_value'], m['num_samples']))
+        console.log('stats', response_json);
+        const stats = response_json as Stats;
+        return stats;
     }
 
     onSaveOptions = async (url:string, config: Config): Promise<number> => {

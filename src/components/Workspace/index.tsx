@@ -33,7 +33,10 @@ export default class Workspace extends Component {
         tab: 0,
         selectedImageIndex: null,
         labeledInBatch: 0,
-        metrics: [],
+        stats: {
+            metrics: [],
+            label_frequencies: []
+        },
         config: {
             'dataset_name': 'dataset',
             'allowed_labels': [],
@@ -94,8 +97,8 @@ export default class Workspace extends Component {
                     index={2}
                 >
                     <Progress
-                        fetchMetrics={this.fetchMetrics}
-                        metrics={this.state.metrics}
+                        fetchStats={this.fetchStats}
+                        stats={this.state.stats}
                     />
                 </LabelingPanel>
             </Root>
@@ -128,12 +131,12 @@ export default class Workspace extends Component {
             });
     }
 
-    fetchMetrics= () => {
+    fetchStats= () => {
         console.log('fetching metrics')
         this.activeLearning
-            .fetchMetrics(this.state.config.active_url)
-            .then(metrics => {
-                this.setState({metrics})
+            .fetchStats(this.state.config.active_url)
+            .then(stats => {
+                this.setState({stats})
             });
     }
 
