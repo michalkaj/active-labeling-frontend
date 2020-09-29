@@ -1,20 +1,30 @@
 import convertSample from "../utils/sampleDecoding";
 import Sample from "./sample";
 import Config from "./config";
-import Metric from "./metric";
 import Stats from "./metric";
 
 export default class ActiveLearning {
     private QUERY = 'query';
     private CONFIG = 'config';
     private ANNOTATE = 'annotate';
+    private ANNOTATIONS = 'annotations';
     private TEACH = 'teach';
     private METRICS = 'metrics';
 
-    fetchSamples = async (url: string, batchSize: number): Promise<Array<Sample>> => {
-        const response = await fetch(url + this.QUERY + `?batch_size=${batchSize}`);
+    fetchSamples = async (url: string, batchSize: number, poolSize: number = 1.): Promise<Array<Sample>> => {
+        const response = await fetch(url
+            + this.QUERY
+            + `?batch_size=${batchSize}`
+            + `&pool_size=${poolSize}`
+        );
         const responseJson = await response.json();
         return responseJson.samples.map(convertSample);
+    }
+
+    fetchAnnotatedSamples = async (url: string): Promise<any> => {
+        const response = await fetch(url + this.ANNOTATIONS);
+        const responseJson = await response.json();
+        return responseJson;
     }
 
     fetchConfig = async (url: string): Promise<Config> => {

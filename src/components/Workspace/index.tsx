@@ -10,6 +10,7 @@ import ActiveLearning from "../../model/activeLearning";
 import Config from "../../model/config";
 import {styled} from "@material-ui/styles";
 import Progress from "../Progress";
+import randomHSL from "../../model/utils";
 
 
 const Root = styled('div')({
@@ -29,7 +30,6 @@ const LabelingPanel = styled(TabPanel)({
 export default class Workspace extends Component {
     state = {
         samples: [],
-        currentWindow: 'setup',
         tab: 0,
         selectedImageIndex: null,
         labeledInBatch: 0,
@@ -42,8 +42,10 @@ export default class Workspace extends Component {
             'allowed_labels': [],
             'multiclass': false,
             'active_url': 'http://localhost:5000/',
-            'batch_size': 10
-        }
+            'batch_size': 10,
+            'pool_size': 1.,
+        },
+        labelColors: new Map()
     }
     activeLearning: ActiveLearning;
 
@@ -74,6 +76,8 @@ export default class Workspace extends Component {
                         config={this.state.config}
                         fetchConfig={this.fetchConfig}
                         saveConfig={this.saveConfig}
+                        saveSamples={this.onFetchAnnotations}
+                        updateColorMapping={this.updateColorMapping}
                     />
                 </LabelingPanel>
                 <LabelingPanel
@@ -90,6 +94,8 @@ export default class Workspace extends Component {
                         samples={this.state.samples}
                         config={this.state.config}
                         labeledInBatch={this.state.labeledInBatch}
+                        fetchSamples={this.onFetchImages}
+                        labelColorMapping={this.state.labelColors}
                     />
                 </LabelingPanel>
                 <LabelingPanel
@@ -111,7 +117,7 @@ export default class Workspace extends Component {
 
     onFetchImages = () => {
         this.activeLearning
-            .fetchSamples(this.state.config.active_url, this.state.config.batch_size)
+            .fetchSamples(this.state.config.active_url, this.state.config.batch_size, this.state.config.pool_size)
             .then(samples => {
                 this.setState({
                     samples: samples,
@@ -121,18 +127,32 @@ export default class Workspace extends Component {
             });
     }
 
+    onFetchAnnotations = () => {
+        this.activeLearning
+            .fetchAnnotatedSamples(this.state.config.active_url)
+            .then(samples => {
+                samples['dataset_name'] = this.state.config.dataset_name;
+                samples['allowed_labels'] = this.state.config.allowed_labels;
+
+                const jsonString = JSON.stringify(samples);
+                const a = document.createElement("a");
+                const file = new Blob([jsonString], {type: 'text/plain'});
+                a.href = URL.createObjectURL(file);
+                a.download = samples['dataset_name'] + '.json';
+                a.click();
+            });
+    }
+
     fetchConfig = () => {
         this.activeLearning
             .fetchConfig(this.state.config.active_url)
             .then(config => {
-                console.log(config);
-                console.log('cc', Boolean(config.multiclass));
-                this.setState({config})
+                this.setState({config});
+                this.updateColorMapping(config.allowed_labels);
             });
     }
 
     fetchStats= () => {
-        console.log('fetching metrics')
         this.activeLearning
             .fetchStats(this.state.config.active_url)
             .then(stats => {
@@ -176,28 +196,33 @@ export default class Workspace extends Component {
             })
     }
 
-    onLabelClick = (labels: Array<string>) => {
+    onLabelClick = (label: string | null) => {
         const sample = this.getCurrentSample();
-        var labeledInBatch = this.state.labeledInBatch;
-        if (labels.length === 0) {
+        let labeledInBatch = this.state.labeledInBatch;
+        console.log(label, 'laaaabel')
+        if (label === null) {
             labeledInBatch -= 1;
-        } else if (sample.labels === undefined || sample.labels.length === 0) {
+            console.log('dowwnn')
+        } else if (sample.label === null) {
             labeledInBatch += 1;
+            console.log('upppp')
         }
-        sample.labels = labels;
+        console.log('saasda', sample.label===null)
+        console.log('laablellll', sample);
+        sample.label = label;
+        console.log('laablellinbatch', labeledInBatch);
 
         this.setState({
             labeledInBatch: labeledInBatch,
-            selectedLabels: labels
+            selectedLabel: label
         });
-        if (!this.state.config.multiclass)
-            this.onNext();
+        this.onNext();
     }
 
     getCurrentSample = (): Sample => {
         const index = this.state.selectedImageIndex;
         if (index == null) {
-            return new Sample('???', '???', []);
+            return new Sample('???', '???');
         }
         return this.state.samples[index];
     }
@@ -209,5 +234,15 @@ export default class Workspace extends Component {
             config[name] = value;
             return {config};
         })
+    }
+
+    updateColorMapping = (labelNames: string[]) => {
+        const labelColors = this.state.labelColors;
+        labelNames.map(labelName => {
+             if (!labelColors.has(labelName)) {
+                labelColors.set(labelName, randomHSL());
+            }
+        })
+        this.setState({labelColors});
     }
 }

@@ -1,14 +1,15 @@
 import React, {useEffect} from 'react';
 import 'react-tagsinput/react-tagsinput.css'
-import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
 import TagsInput from "react-tagsinput";
 import Config from "../../model/config";
 import {styled} from "@material-ui/styles";
-import {FormControl, Input, Radio, RadioGroup, Slider, Typography} from "@material-ui/core";
+import {FormControl, Input, Radio, RadioGroup, Typography} from "@material-ui/core";
 import 'App.css'
+import Button from "@material-ui/core/Button";
+import Slider from "@material-ui/core/Slider";
 
 
 const MainForm = styled(Grid)({
@@ -28,6 +29,8 @@ type Props = {
     onLoadImages: () => void,
     fetchConfig: () => void,
     saveConfig: (name: string, value: any) => void,
+    updateColorMapping: (labelNames: string[]) => void,
+    saveSamples: () => void,
     config: Config
 }
 
@@ -86,7 +89,10 @@ const Setup = (props: Props) => {
                     <TagsInputGrid container>
                         <TagsInput
                             value={props.config.allowed_labels}
-                            onChange={(labels) => props.saveConfig('allowed_labels', labels)}
+                            onChange={(labelNames) => {
+                                props.updateColorMapping(labelNames);
+                                props.saveConfig('allowed_labels', labelNames);
+                            }}
                             onlyUnique={true}
                             addOnBlur={true}
                             addOnPaste={true}/>
@@ -157,11 +163,11 @@ const Setup = (props: Props) => {
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={props.onLoadImages}>Load images</Button>
+                        onClick={props.fetchConfig}>Upload config</Button>
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={props.fetchConfig}>Fetch config</Button>
+                        onClick={props.saveSamples}>Save annotations</Button>
                 </Grid>
             </MainForm>
         </Grid>

@@ -1,12 +1,12 @@
 import React from 'react';
-import Select, {OptionsType, ValueType} from 'react-select';
+import Select, {ValueType} from 'react-select';
 import Button from "@material-ui/core/Button";
 import Grid from "@material-ui/core/Grid";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import {styled} from "@material-ui/styles";
 import SampleList from "../SampleList";
 import Sample from "../../model/sample";
-import {Divider, List, ListItem, ListItemText, Typography} from "@material-ui/core";
+import {Divider, Typography} from "@material-ui/core";
 
 const StyledLinearProgress = styled(Grid)({
     width: '70%'
@@ -25,24 +25,21 @@ const SideBarGrid = styled(Grid) ({
 //     overflow: 'auto'
 // })
 
-
+type TOption = {
+    label: string
+}
 
 type Props = {
     onTeach: (event: React.MouseEvent<HTMLButtonElement>) => void
     onSelectSample : (index: number) => void,
-    onLabelClick: (label: string[]) => void
+    onLabelClick: (label: string | null) => void
     progress: number,
     multiclass: boolean,
     labels: string[],
-    selectedLabels: string[],
-    samples: Array<Sample>
+    selectedLabel: string | null,
+    samples: Array<Sample>,
+    labelColorMapping: Map<string, string>
 }
-
-type TOption = {
-    label: string,
-    value: string
-};
-
 
 const Sidebar = (props: Props) => {
     return (
@@ -99,9 +96,9 @@ const Sidebar = (props: Props) => {
                         style={{width: '100%'}}
                         autoFocus={true}
                         placeholder="Label..."
-                        options={stringsToLabelGroup(props.labels)}
-                        isMulti={props.multiclass}
-                        value={stringsToLabelGroup(props.selectedLabels)}
+                        options={props.labels.map(l => {return {label: l}})}
+                        isMulti={false}
+                        // value={props.selectedLabel.name}
                         onChange={(option) => handleChange(option, props)}
                     />
                 </Grid>
@@ -133,6 +130,7 @@ const Sidebar = (props: Props) => {
                     <SampleList
                         samples={props.samples}
                         onSelectSample={props.onSelectSample}
+                        labelColorMapping={props.labelColorMapping}
                     />
                 </Grid>
             </Grid>
@@ -141,63 +139,30 @@ const Sidebar = (props: Props) => {
     )
 }
 
-
-const randomHSL = () => {
-    return "hsla(" + ~~(360 * Math.random()) + "," +
-        "70%," +
-        "80%, 0.5)"
-}
-
-
 const handleChange = (option: ValueType<TOption>, props: Props): void => {
-    if (props.multiclass) {
-        var options = option as TOption[];
-        options = (options === null) ? [] : options;
-        props.onLabelClick(options.map((o: TOption) => o.label));
-    } else {
-        option = option as TOption;
-        if (option !== null && option !== undefined)
-            props.onLabelClick([option.label]);
-    }
-};
-
-
-const stringsToLabelGroup = (labels: string[]): OptionsType<TOption> => {
-    if (labels === undefined)
-        return [];
-    return labels.map(l => {
-        return {label: l, value: l.toLowerCase()}
-    });
+    const opt = option as TOption;
+    if (option !== null && option !== undefined)
+        props.onLabelClick(opt.label);
 };
 
 const renderTopLabels = (labels: Array<string>, item_num: number = 10, props: Props) => {
     const topLabels = labels.slice(0, item_num);
-    const alreadySelected = (props.selectedLabels === undefined) ? [] : props.selectedLabels;
-
     return (
-        topLabels.map(l => {
-            const index = alreadySelected.indexOf(l);
+        topLabels.map(label => {
             return (
                 <Button
-                    style={{borderRadius: 16, backgroundColor: randomHSL(), margin: 2}}
+                    style={{borderRadius: 16, backgroundColor: props.labelColorMapping.get(label), margin: 2}}
                     variant='outlined'
                     onClick={() => {
-                        if (index === -1) {
-                            props.onLabelClick([l, ...alreadySelected])
-                        }
-                        else {
-                            props.onLabelClick([
-                                ...alreadySelected.slice(0, index),
-                                ...alreadySelected.slice(index + 1),
-                            ])
-                        }
+                        props.onLabelClick(label)
                     }}
                 >
-                    {l}
+                    {label}
                 </Button>
             )
         })
     )
 }
+
 
 export default Sidebar;

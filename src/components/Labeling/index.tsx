@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import Sidebar from '../Sidebar'
 import ImageClassification from '../ImageClassification'
 import Grid from "@material-ui/core/Grid";
@@ -17,21 +17,29 @@ const WorkspaceGrid = styled(Grid)({
 type Props = {
     onPrev: () => void,
     onNext: () => void,
+    fetchSamples: () => void,
     onTeach: (event: React.MouseEvent<HTMLButtonElement>) => void,
     onSelectSample : (index: number) => void,
-    onLabelClick: (labels: Array<string>) => void,
+    onLabelClick: (labels: string | null) => void,
     currentSample: Sample,
     samples: Array<Sample>,
     config: Config
     labeledInBatch: number,
+    labelColorMapping: Map<string, string>
 }
 
 const Labeling = (props: Props) => {
+    useEffect(() => {
+        if (props.samples.length == 0) {
+            props.fetchSamples();
+        }
+    });
+
     return (
         <WorkspaceGrid
             container
-            justify='space-between'
-            direction='row'
+            // justify='space-between'
+            // direction='row'
         >
             <Grid
                 container
@@ -69,12 +77,13 @@ const Labeling = (props: Props) => {
                 key={props.currentSample.name}
                 labels={props.config.allowed_labels}
                 multiclass={props.config.multiclass}
-                selectedLabels={props.currentSample.labels}
+                selectedLabel={props.currentSample.label}
                 onLabelClick={props.onLabelClick}
                 onSelectSample={props.onSelectSample}
                 onTeach={props.onTeach}
                 progress={computeProgress(props.labeledInBatch, props.samples)}
                 samples={props.samples}
+                labelColorMapping={props.labelColorMapping}
             />
         </WorkspaceGrid>
     )

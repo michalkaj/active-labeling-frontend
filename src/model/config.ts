@@ -4,5 +4,6 @@ export default interface Config {
     multiclass: boolean,
     active_url: string,
     batch_size: number,
+    pool_size: number,
     [key: string]: any
 }
