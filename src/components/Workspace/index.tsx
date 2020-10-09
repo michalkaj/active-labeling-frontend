@@ -9,7 +9,7 @@ import Sample from "../../model/sample";
 import ActiveLearning from "../../model/activeLearning";
 import Config from "../../model/config";
 import {styled} from "@material-ui/styles";
-import Progress from "../Progress";
+import Metrics from "../Metrics";
 import randomHSL from "../../model/utils";
 
 
@@ -102,7 +102,7 @@ export default class Workspace extends Component {
                     value={this.state.tab}
                     index={2}
                 >
-                    <Progress
+                    <Metrics
                         fetchStats={this.fetchStats}
                         stats={this.state.stats}
                     />
@@ -129,16 +129,17 @@ export default class Workspace extends Component {
 
     onFetchAnnotations = () => {
         this.activeLearning
-            .fetchAnnotatedSamples(this.state.config.active_url)
-            .then(samples => {
-                samples['dataset_name'] = this.state.config.dataset_name;
-                samples['allowed_labels'] = this.state.config.allowed_labels;
-
-                const jsonString = JSON.stringify(samples);
+            .fetchAnnotations(this.state.config.active_url)
+            .then(annotations => {
+                const jsonString = JSON.stringify(annotations);
                 const a = document.createElement("a");
                 const file = new Blob([jsonString], {type: 'text/plain'});
                 a.href = URL.createObjectURL(file);
-                a.download = samples['dataset_name'] + '.json';
+                let name = annotations['dataset_name'];
+                if (name === undefined || name.length == 0) {
+                    name = 'dataset'
+                }
+                a.download = name + '.json';
                 a.click();
             });
     }
@@ -147,6 +148,7 @@ export default class Workspace extends Component {
         this.activeLearning
             .fetchConfig(this.state.config.active_url)
             .then(config => {
+                console.log('fetching conf', config);
                 this.setState({config});
                 this.updateColorMapping(config.allowed_labels);
             });
@@ -163,8 +165,9 @@ export default class Workspace extends Component {
     onTeach = () => {
         this.activeLearning
             .teach(this.state.config.active_url, this.state.samples)
-            .then(result => {
-                if (result == 200) {
+            .then(response => {
+                console.log('onTeach respoonbse: :::::::', response);
+                if (response.ok) {
                     this.onFetchImages();
                 }
             });
@@ -199,18 +202,12 @@ export default class Workspace extends Component {
     onLabelClick = (label: string | null) => {
         const sample = this.getCurrentSample();
         let labeledInBatch = this.state.labeledInBatch;
-        console.log(label, 'laaaabel')
         if (label === null) {
             labeledInBatch -= 1;
-            console.log('dowwnn')
         } else if (sample.label === null) {
             labeledInBatch += 1;
-            console.log('upppp')
         }
-        console.log('saasda', sample.label===null)
-        console.log('laablellll', sample);
         sample.label = label;
-        console.log('laablellinbatch', labeledInBatch);
 
         this.setState({
             labeledInBatch: labeledInBatch,
@@ -222,13 +219,12 @@ export default class Workspace extends Component {
     getCurrentSample = (): Sample => {
         const index = this.state.selectedImageIndex;
         if (index == null) {
-            return new Sample('???', '???');
+            return new Sample('???', '???', '???');
         }
         return this.state.samples[index];
     }
 
     saveConfig = (name: string, value: any): void => {
-        console.log('saving', name, value);
         this.setState((prevState) => {
             let config: Config = Object.assign({}, this.state.config);
             config[name] = value;

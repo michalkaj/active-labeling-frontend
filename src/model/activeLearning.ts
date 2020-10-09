@@ -21,7 +21,7 @@ export default class ActiveLearning {
         return responseJson.samples.map(convertSample);
     }
 
-    fetchAnnotatedSamples = async (url: string): Promise<any> => {
+    fetchAnnotations = async (url: string): Promise<any> => {
         const response = await fetch(url + this.ANNOTATIONS);
         const responseJson = await response.json();
         return responseJson;
@@ -30,14 +30,19 @@ export default class ActiveLearning {
     fetchConfig = async (url: string): Promise<Config> => {
         const response = await fetch(url + this.CONFIG);
         const config = await response.json();
-        config.multiclass = config.multiclass === 'true';
-        return config
+        return {
+            active_url: config.server_url,
+            allowed_labels: config.labels,
+            batch_size: config.batch_size,
+            dataset_name: config.dataset_name,
+            multiclass: config.multiclass == 'true',
+            pool_size: config.pool_size
+        }
     }
 
     fetchStats = async (url: string): Promise<Stats> => {
         const response = await fetch(url + this.METRICS);
         const response_json = await response.json();
-        console.log('stats', response_json);
         const stats = response_json as Stats;
         return stats;
     }
@@ -54,22 +59,29 @@ export default class ActiveLearning {
         return response.status;
     }
 
-    teach = async (url: string, samples: Array<Sample>): Promise<number> => {
-        const samplesJson = JSON.stringify({'samples': samples.map(s => s.toDict())});
-        console.log(samplesJson);
+    teach = async (url: string, samples: Array<Sample>): Promise<Response> => {
+        return this.annotate(url, samples)
+            .then(annotate_result => {
+                if (annotate_result.ok) {
+                    return fetch(url + this.TEACH);
+                } else {
+                    throw new Error('Something went wrong');
+                }
+            });
+    }
+
+    annotate = async (url: string, samples: Array<Sample>): Promise<Response> => {
+        const samplesJson = JSON.stringify({
+            'samples':
+                samples.map(s => {
+                    return {path: s.path, label: s.label}
+                })
+        })
         const requestOptions = {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: samplesJson
         };
-        fetch(url + this.ANNOTATE, requestOptions)
-            .then(result => {
-                if (result.ok) {
-                    return fetch(url + this.TEACH).then(r => r.status);
-                } else {
-                    throw new Error('Something went wrong')
-                }
-            })
-        return 200
+        return fetch(url + this.ANNOTATE, requestOptions);
     }
 }

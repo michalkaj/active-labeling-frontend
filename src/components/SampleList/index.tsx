@@ -17,11 +17,15 @@ type Props = {
 
 const SampleList = (props: Props) => {
     return (
-        <ReactList
-            itemRenderer={(i, k) => renderItem(i, k, props)}
-            length={props.samples.length}
-            type='uniform'
-        />
+        <div
+            style={{width: '100%'}}
+        >
+             <ReactList
+                itemRenderer={(i, k) => renderItem(i, k, props)}
+                length={props.samples.length}
+                type='uniform'
+            />
+        </div>
     )
 }
 
@@ -30,20 +34,32 @@ const renderItem = (index: number, key: ReactText, props: Props) => {
     return (
         <ListItem key={sample.src}
             onClick={() => props.onSelectSample(index)}
-            style={{backgroundColor: (sample.label !== null) ? '#81c784' : '#e57373', marginBottom: 4, borderRadius: 10}}>
-            <Grid item>
-                <img style={{'height': 40, 'width': 40, borderRadius: '50%'}} src={sample.src} alt={sample.src}/>
-            </Grid>
+            style={{backgroundColor: (sample.label !== null) ? '#81c784' : '#e57373', marginBottom: 4, padding: 4, borderRadius: 10}}>
             <Grid
                 item
                 container
-                style={{textOverflow: 'clip', overflow: 'hidden', whiteSpace: 'nowrap'}}>
+                justify={'space-between'}
+                direction='row'
+            >
+                <Grid item>
+                    <img
+                        style={{'height': 40, 'width': 40, borderRadius: '50%'}}
+                        src={sample.src}
+                        alt={sample.name}
+                    />
+                </Grid>
+                {/*<Grid*/}
+                {/*    item*/}
+                {/*    container*/}
+                {/*    direction='row'*/}
+                {/*    style={{textOverflow: 'clip', overflow: 'hidden', whiteSpace: 'nowrap'}}>*/}
                 <Grid item>
                     <ListItemText>{sample.name}</ListItemText>
                 </Grid>
-                <Grid container direction="row">
+                <Grid item>
                     {renderLabels(sample.label, props.labelColorMapping)}
                 </Grid>
+                {/*</Grid>*/}
             </Grid>
         </ListItem>
     )

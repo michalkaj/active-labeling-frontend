@@ -9,13 +9,14 @@ type Props = {
 }
 
 
-const Progress = (props: Props) => {
+const Metrics = (props: Props) => {
     useEffect(() => {
         props.fetchStats();
     }, []);
 
     const labels = Object.keys(props.stats.label_frequencies);
     const frequencies = Object.values(props.stats.label_frequencies);
+    console.log('progrssssss', props.stats);
     return (
         <Grid
             container
@@ -25,25 +26,31 @@ const Progress = (props: Props) => {
             style={{overflow: 'auto'}}
         >
             <Grid item style={{marginBottom: 30}}>
-            {props.stats.metrics.map((metric: any) => {
-                return <Plot
-                    data={[
-                        {
-                            x: metric['num_samples'],
-                            y: metric['metric_value'],
-                            yaxis: metric['metric_name'],
-                            type: 'scatter',
-                            mode: 'lines+markers',
-                            marker: {color: 'blue'},
-                        },
-                    ]}
-                    layout={{
-                        title: metric['metric_name'],
-                        xaxis: {title: 'Sample size'},
-                        yaxis: {title: 'Metric value'}
-                    }}
-                />}
-            )}
+                {props.stats.metrics.map((metric_values: any) => {
+                    const [metric_name, values] = metric_values;
+                    const y = values.map((v: any) => v['metric_value']);
+                    const x = values.map((v: any) => v['num_samples']);
+
+                    console.log('vaallsss', values);
+                    return <Plot
+                        data={[
+                            {
+                                x: x,
+                                y: y,
+                                yaxis: metric_name,
+                                type: 'scatter',
+                                mode: 'lines+markers',
+                                marker: {color: 'blue'},
+                            },
+                        ]}
+                        layout={{
+                            title: metric_name,
+                            xaxis: {title: 'Sample size'},
+                            yaxis: {title: 'Metric value'}
+                        }}
+                    />
+                    })
+                }
             </Grid>
             <Grid>
                 <Plot
@@ -65,4 +72,4 @@ const Progress = (props: Props) => {
     );
 }
 
-export default Progress;
+export default Metrics;

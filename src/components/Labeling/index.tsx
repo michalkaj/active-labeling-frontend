@@ -30,7 +30,9 @@ type Props = {
 
 const Labeling = (props: Props) => {
     useEffect(() => {
+        console.log('props', props);
         if (props.samples.length == 0) {
+            console.log('fetching')
             props.fetchSamples();
         }
     });
