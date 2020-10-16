@@ -36,10 +36,7 @@ type Props = {
 
 
 const Setup = (props: Props) => {
-    useEffect(() => {
-        props.fetchConfig();
-    }, []);
-
+    console.log('stup', props.config);
     return (
         <Grid
             container
@@ -50,6 +47,17 @@ const Setup = (props: Props) => {
                 spacing={3}
             >
                 <Grid item container>
+                    <Typography variant='h6' gutterBottom>Active learning backend URL</Typography>
+                    <TextField
+                        value={props.config.active_url}
+                        margin='normal'
+                        fullWidth
+                        name='activeUrl'
+                        onChange={(event) => props.saveConfig('server_url', event.target.value)}
+                    />
+                </Grid>
+
+                <Grid item container>
                     <Typography variant='h6' gutterBottom>Dataset name</Typography>
                     <TextField
                         value={props.config.dataset_name}
@@ -57,17 +65,6 @@ const Setup = (props: Props) => {
                         fullWidth
                         name='datasetName'
                         onChange={(event) => {props.saveConfig('dataset_name', event.target.value)}}
-                    />
-                </Grid>
-
-                <Grid item container>
-                    <Typography variant='h6' gutterBottom>Active learning backend URL</Typography>
-                    <TextField
-                        value={props.config.active_url}
-                        margin='normal'
-                        fullWidth
-                        name='activeUrl'
-                        onChange={(event) => props.saveConfig('active_url', event.target.value)}
                     />
                 </Grid>
 
@@ -163,7 +160,7 @@ const Setup = (props: Props) => {
                     <Button
                         variant="contained"
                         color="primary"
-                        onClick={props.fetchConfig}>Upload config</Button>
+                        onClick={props.fetchConfig}>Fetch config</Button>
                     <Button
                         variant="contained"
                         color="primary"

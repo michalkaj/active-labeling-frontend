@@ -31,7 +31,7 @@ export default class ActiveLearning {
         const response = await fetch(url + this.CONFIG);
         const config = await response.json();
         return {
-            active_url: config.server_url,
+            server_url: url,
             allowed_labels: config.labels,
             batch_size: config.batch_size,
             dataset_name: config.dataset_name,
@@ -40,14 +40,7 @@ export default class ActiveLearning {
         }
     }
 
-    fetchStats = async (url: string): Promise<Stats> => {
-        const response = await fetch(url + this.METRICS);
-        const response_json = await response.json();
-        const stats = response_json as Stats;
-        return stats;
-    }
-
-    onSaveOptions = async (url:string, config: Config): Promise<number> => {
+    saveConfig = async (url:string, config: Config): Promise<number> => {
         const configJson = JSON.stringify(config);
 
         const requestOptions = {
@@ -57,6 +50,13 @@ export default class ActiveLearning {
         };
         const response = await fetch(url + this.CONFIG, requestOptions);
         return response.status;
+    }
+
+    fetchStats = async (url: string): Promise<Stats> => {
+        const response = await fetch(url + this.METRICS);
+        const response_json = await response.json();
+        const stats = response_json as Stats;
+        return stats;
     }
 
     teach = async (url: string, samples: Array<Sample>): Promise<Response> => {

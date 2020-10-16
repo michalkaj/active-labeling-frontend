@@ -1,8 +1,8 @@
 export default interface Config {
     dataset_name: string,
     allowed_labels: Array<string>,
+    server_url: string,
     multiclass: boolean,
-    active_url: string,
     batch_size: number,
     pool_size: number,
     [key: string]: any

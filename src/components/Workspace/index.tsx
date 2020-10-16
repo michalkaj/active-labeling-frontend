@@ -39,11 +39,11 @@ export default class Workspace extends Component {
         },
         config: {
             'dataset_name': 'dataset',
+            'server_url': '',
             'allowed_labels': [],
             'multiclass': false,
-            'active_url': 'http://localhost:5000/',
             'batch_size': 10,
-            'pool_size': 1.,
+            'pool_size': 0.1,
         },
         labelColors: new Map()
     }
@@ -117,7 +117,7 @@ export default class Workspace extends Component {
 
     onFetchImages = () => {
         this.activeLearning
-            .fetchSamples(this.state.config.active_url, this.state.config.batch_size, this.state.config.pool_size)
+            .fetchSamples(this.state.config.server_url, this.state.config.batch_size, this.state.config.pool_size)
             .then(samples => {
                 this.setState({
                     samples: samples,
@@ -129,7 +129,7 @@ export default class Workspace extends Component {
 
     onFetchAnnotations = () => {
         this.activeLearning
-            .fetchAnnotations(this.state.config.active_url)
+            .fetchAnnotations(this.state.config.server_url)
             .then(annotations => {
                 const jsonString = JSON.stringify(annotations);
                 const a = document.createElement("a");
@@ -146,25 +146,27 @@ export default class Workspace extends Component {
 
     fetchConfig = () => {
         this.activeLearning
-            .fetchConfig(this.state.config.active_url)
+            .fetchConfig(this.state.config.server_url)
             .then(config => {
-                console.log('fetching conf', config);
-                this.setState({config});
-                this.updateColorMapping(config.allowed_labels);
+                const newConfig = {...this.state.config, ...config};
+                this.setState({config: newConfig});
+                console.log('this is new config', newConfig);
+                this.updateColorMapping(newConfig.allowed_labels);
             });
     }
 
     fetchStats= () => {
         this.activeLearning
-            .fetchStats(this.state.config.active_url)
+            .fetchStats(this.state.config.server_url)
             .then(stats => {
                 this.setState({stats})
             });
     }
 
+
     onTeach = () => {
         this.activeLearning
-            .teach(this.state.config.active_url, this.state.samples)
+            .teach(this.state.config.server_url, this.state.samples)
             .then(response => {
                 console.log('onTeach respoonbse: :::::::', response);
                 if (response.ok) {
@@ -226,9 +228,9 @@ export default class Workspace extends Component {
 
     saveConfig = (name: string, value: any): void => {
         this.setState((prevState) => {
-            let config: Config = Object.assign({}, this.state.config);
-            config[name] = value;
-            return {config};
+            let newConfig: Config = Object.assign({}, this.state.config);
+            newConfig[name] = value;
+            return {'config': newConfig};
         })
     }
 
