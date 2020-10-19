@@ -60,14 +60,7 @@ export default class ActiveLearning {
     }
 
     teach = async (url: string, samples: Array<Sample>): Promise<Response> => {
-        return this.annotate(url, samples)
-            .then(annotate_result => {
-                if (annotate_result.ok) {
-                    return fetch(url + this.TEACH);
-                } else {
-                    throw new Error('Something went wrong');
-                }
-            });
+        return this.annotate(url, samples);
     }
 
     annotate = async (url: string, samples: Array<Sample>): Promise<Response> => {
