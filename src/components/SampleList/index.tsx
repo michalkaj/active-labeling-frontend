@@ -5,8 +5,8 @@ import ReactList from "react-list";
 import Button from "@material-ui/core/Button";
 
 const StyledList = styled(List)({
-   overflow: 'auto',
-   backgroundColor: 'red'
+   overflowY: 'scroll',
+   overflowX: 'hidden',
 });
 
 type Props = {
@@ -17,7 +17,7 @@ type Props = {
 
 const SampleList = (props: Props) => {
     return (
-        <div
+        <StyledList
             style={{width: '100%'}}
         >
              <ReactList
@@ -25,7 +25,7 @@ const SampleList = (props: Props) => {
                 length={props.samples.length}
                 type='uniform'
             />
-        </div>
+        </StyledList>
     )
 }
 
@@ -48,18 +48,15 @@ const renderItem = (index: number, key: ReactText, props: Props) => {
                         alt={sample.name}
                     />
                 </Grid>
-                {/*<Grid*/}
-                {/*    item*/}
-                {/*    container*/}
-                {/*    direction='row'*/}
-                {/*    style={{textOverflow: 'clip', overflow: 'hidden', whiteSpace: 'nowrap'}}>*/}
                 <Grid item>
                     <ListItemText>{sample.name}</ListItemText>
                 </Grid>
-                <Grid item>
+                <Grid item
+                      container
+                      justify='flex-end'
+                      style={{width: '40%'}}>
                     {renderLabels(sample.label, props.labelColorMapping)}
                 </Grid>
-                {/*</Grid>*/}
             </Grid>
         </ListItem>
     )

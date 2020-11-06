@@ -17,13 +17,16 @@ const Root = styled('div')({
     flexGrow: 1,
     margin: 0,
     padding: 0,
-    height: 'calc(100% - 48px)',
+    // height: 'calc(100% - 48px)',
+    height: '100%',
+    minHeight: '100vh',
     backgroundColor: 'red'
 });
 
 const LabelingPanel = styled(TabPanel)({
     backgroundColor: '#F5F5F5',
-    height: 'calc(100% - 48px)'
+    height: '100%'
+    // height: 'calc(100% - 48px)'
 })
 
 

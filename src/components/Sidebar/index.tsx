@@ -8,15 +8,19 @@ import SampleList from "../SampleList";
 import Sample from "../../model/sample";
 import {Divider, Typography} from "@material-ui/core";
 
-const StyledLinearProgress = styled(Grid)({
-    width: '70%'
-});
 
 const SideBarGrid = styled(Grid) ({
     backgroundColor: '#cfd8dc',
-    // height: '100%',
+    height: '100%',
     // overflow: 'auto'
-    overflow: 'hidden'
+    // overflow: 'hidden'
+})
+
+const SideBarItem = styled(Grid) ({
+    item: 'true',
+    container: 'true',
+    paddingTop: '10%',
+    width: '90%',
 })
 
 // const SampleListContainer = styled(Grid)({
@@ -46,26 +50,26 @@ const Sidebar = (props: Props) => {
         <SideBarGrid
             container
             xs={3}
-            direction='column'
-            // justify='center'
-            alignItems='center'
+            justify='center'
+            alignItems='flex-start'
+            alignContent='flex-start'
         >
-            <Grid
-                item
+            <SideBarItem
                 container
                 direction='row'
                 alignItems='center'
-                justify="space-evenly"
-                style={{marginTop: 30}}
             >
-                <StyledLinearProgress item>
+                <Grid
+                    item
+                    style={{width: '80%', paddingRight: '3%'}}
+                >
                     <LinearProgress
                         variant='determinate'
                         value={props.progress}
 
                     />
-                </StyledLinearProgress>
-                <Grid>
+                </Grid>
+                <Grid item>
                     <Button
                         variant='contained'
                         color='primary'
@@ -75,15 +79,12 @@ const Sidebar = (props: Props) => {
                         Teach
                     </Button>
                 </Grid>
-            </Grid>
+            </SideBarItem>
 
-            <Divider variant='middle' style={{marginTop: 30, marginBottom: 30}}/>
+            {/*<Divider variant='middle' style={{marginTop: 30, marginBottom: 30}}/>*/}
 
-            <Grid
-                container
-                item
-                justify='center'
-                style={{width: '90%'}}
+            <SideBarItem
+                // justify='center'
             >
                 <Grid item style={{width: '100%'}}>
                     <Typography>Pick a label</Typography>
@@ -105,19 +106,17 @@ const Sidebar = (props: Props) => {
                 <Grid
                     item
                     container
-                    justify='center'
+                    // justify='center'
                     style={{width: '100%', overflow: 'auto'}}
                 >
                     {renderTopLabels(props.labels, 10, props)}
                 </Grid>
-            </Grid>
+            </SideBarItem>
 
-            <Divider variant='middle' style={{marginTop: 30, marginBottom: 30}}/>
+            {/*<Divider variant='middle' style={{marginTop: 30, marginBottom: 30}}/>*/}
 
-            <Grid
-                item
-                container
-                style={{height: 500, width: '90%'}}
+            <SideBarItem
+                style={{maxHeight: '50%', overflow: 'hidden'}}
             >
                 <Grid item>
                     <Typography>Samples in batch</Typography>
@@ -125,7 +124,7 @@ const Sidebar = (props: Props) => {
                 <Grid
                     container
                     item
-                    style={{height: '100%', overflowX: 'hidden', overflowY: 'scroll'}}
+                    style={{height: '100%'}}
                 >
                     <SampleList
                         samples={props.samples}
@@ -133,7 +132,7 @@ const Sidebar = (props: Props) => {
                         labelColorMapping={props.labelColorMapping}
                     />
                 </Grid>
-            </Grid>
+            </SideBarItem>
 
         </SideBarGrid>
     )

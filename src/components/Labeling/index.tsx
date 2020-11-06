@@ -7,11 +7,12 @@ import Config from "../../model/config";
 import {styled} from "@material-ui/styles";
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
+import {LinearProgress} from "@material-ui/core";
 
 const WorkspaceGrid = styled(Grid)({
     backgroundColor: '#eceff1',
     height: '100%',
-    overflow: 'hidden'
+    // overflow: 'hidden'
 })
 
 type Props = {
@@ -40,8 +41,6 @@ const Labeling = (props: Props) => {
     return (
         <WorkspaceGrid
             container
-            // justify='space-between'
-            // direction='row'
         >
             <Grid
                 container
@@ -59,8 +58,15 @@ const Labeling = (props: Props) => {
                     <ArrowBackIosIcon/>
                 </Grid>
                 <Grid
+                    container
+                    alignItems='center'
                     xs={10}
                 >
+                    {/*<LinearProgress*/}
+                    {/*    variant="determinate"*/}
+                    {/*    value={20}*/}
+                    {/*    style={{'width': '90%'}}*/}
+                    {/*/>*/}
                     <ImageClassification
                         imageSrc={props.currentSample.src}/>
                 </Grid>
