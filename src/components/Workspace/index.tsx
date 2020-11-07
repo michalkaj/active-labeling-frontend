@@ -10,16 +10,18 @@ import ActiveLearning from "../../utils/activeLearning";
 import Config from "../../utils/config";
 import {styled} from "@material-ui/styles";
 import Metrics from "../Metrics";
-import randomHSL from "../../utils/utils";
+import {getFromStorage, randomHSL, saveToStorage} from "../../utils/utils";
 import loadJson from "../../utils/loadJson";
 import {createMuiTheme, MuiThemeProvider} from "@material-ui/core";
+import {Cookies} from "react-cookie";
+import Stats from "../../utils/metric";
+import config from "../../utils/config";
 
 
 const Root = styled('div')({
     flexGrow: 1,
     margin: 0,
     padding: 0,
-    // height: 'calc(100% - 48px)',
     height: '90%',
     minHeight: '90vh',
     backgroundColor: 'red',
@@ -34,45 +36,62 @@ const LabelingPanel = styled(TabPanel)({
 
 
 const theme = createMuiTheme({
-  palette: {
-      primary: {
-          main: '#1565C0'
-      },
-      secondary: {
-          main: '#FFC107'
-      },
-      text: {
-          primary: '#212121'
-      }
-  }
+    palette: {
+        primary: {
+            main: '#1565C0'
+        },
+        secondary: {
+            main: '#FFC107'
+        },
+        text: {
+            primary: '#212121'
+        }
+    }
 });
 
+type propTypes = {
+    cookies: Cookies
+};
+
+type stateType = {
+    samples: Sample[],
+    tab: number,
+    selectedImageIndex: number,
+    labeledInBatch: number,
+    stats: Stats,
+    config: Config,
+    labelColors: Map<string, string>,
+    // cookies: Cookies,
+}
 
 export default class Workspace extends Component {
-    state = {
-        samples: [],
-        tab: 0,
-        selectedImageIndex: null,
-        labeledInBatch: 0,
-        stats: {
-            metrics: [],
-            label_frequencies: []
-        },
-        config: {
+    activeLearning: ActiveLearning;
+    state: stateType;
+
+    constructor(props: propTypes) {
+        super(props);
+        const defaultConfig = {
             'dataset_name': 'dataset',
             'server_url': '',
             'allowed_labels': [],
-            'multiclass': false,
             'batch_size': 10,
             'pool_size': 0.1,
             'training_set_size': 20,
-        },
-        labelColors: new Map()
-    }
-    activeLearning: ActiveLearning;
+        };
 
-    constructor(props: any) {
-        super(props);
+        this.state = {
+            samples: [],
+            tab: getFromStorage('tab', 0),
+            selectedImageIndex: -1,
+            labeledInBatch: 0,
+            stats: {
+                metrics: [],
+                label_frequencies: []
+            },
+            config: getFromStorage('config', defaultConfig),
+            labelColors: new Map(),
+        }
+        this.updateColorMapping(this.state.config.allowed_labels)
         this.activeLearning = new ActiveLearning();
     }
 
@@ -137,6 +156,7 @@ export default class Workspace extends Component {
     }
 
     handleChangeTab = (event: object, value: any) => {
+        saveToStorage('tab', value);
         this.setState({tab: value})
     }
 
@@ -170,19 +190,18 @@ export default class Workspace extends Component {
     }
 
     loadConfig = (config: any) => {
-        console.log('config', config)
         const newConfig = {...this.state.config, ...config};
         this.setState({config: newConfig});
-        console.log('this is new config', newConfig);
+        saveToStorage('config', newConfig);
         this.updateColorMapping(newConfig.allowed_labels);
         // this.activeLearning
-            // .fetchConfig(this.state.config.server_url)
-            // .then(config => {
-            //     const newConfig = {...this.state.config, ...config};
-            //     this.setState({config: newConfig});
-            //     console.log('this is new config', newConfig);
-            //     this.updateColorMapping(newConfig.allowed_labels);
-            // });
+        // .fetchConfig(this.state.config.server_url)
+        // .then(config => {
+        //     const newConfig = {...this.state.config, ...config};
+        //     this.setState({config: newConfig});
+        //     console.log('this is new config', newConfig);
+        //     this.updateColorMapping(newConfig.allowed_labels);
+        // });
     }
 
     loadAnnotations = (annots: any) => {
@@ -258,7 +277,7 @@ export default class Workspace extends Component {
 
     getCurrentSample = (): Sample => {
         const index = this.state.selectedImageIndex;
-        if (index == null) {
+        if (index < 0) {
             return new Sample('???', '???', '???');
         }
         return this.state.samples[index];
@@ -268,6 +287,7 @@ export default class Workspace extends Component {
         this.setState((prevState) => {
             let newConfig: Config = Object.assign({}, this.state.config);
             newConfig[name] = value;
+            saveToStorage('config', newConfig);
             return {'config': newConfig};
         })
     }
@@ -275,7 +295,7 @@ export default class Workspace extends Component {
     updateColorMapping = (labelNames: string[]) => {
         const labelColors = this.state.labelColors;
         labelNames.map(labelName => {
-             if (!labelColors.has(labelName)) {
+            if (!labelColors.has(labelName)) {
                 labelColors.set(labelName, randomHSL());
             }
         })

@@ -6,7 +6,7 @@ import LinearProgress from "@material-ui/core/LinearProgress";
 import {styled} from "@material-ui/styles";
 import SampleList from "../SampleList";
 import Sample from "../../utils/sample";
-import {Box, Divider, Paper, Typography} from "@material-ui/core";
+import {Box, Paper, Typography} from "@material-ui/core";
 
 
 const SideBarGrid = styled(Grid) ({
@@ -53,7 +53,6 @@ const Sidebar = (props: Props) => {
             container
             xs={3}
             justify='center'
-
         >
             <MyPaper>
                 <Grid
@@ -90,12 +89,7 @@ const Sidebar = (props: Props) => {
                         </Grid>
                     </SideBarItem>
 
-
-                    {/*<Divider variant='middle' style={{marginTop: 30, marginBottom: 30}}/>*/}
-
-                    <SideBarItem
-                        // justify='center'
-                    >
+                    <SideBarItem>
                         <Grid item style={{width: '100%'}}>
                             <Typography >
                                 <Box color="textPrimary" fontSize="h6.fontSize" fontWeight='fontWeightBold'>
@@ -127,10 +121,8 @@ const Sidebar = (props: Props) => {
                         </Grid>
                     </SideBarItem>
 
-                    {/*<Divider variant='middle' style={{marginTop: 30, marginBottom: 30}}/>*/}
-
                     <SideBarItem
-                        style={{maxHeight: '50%', overflow: 'hidden'}}
+                        style={{backgroundColor: 'blue'}}
                     >
                         <Grid item>
                             <Typography >
@@ -142,7 +134,7 @@ const Sidebar = (props: Props) => {
                         <Grid
                             container
                             item
-                            style={{height: '100%'}}
+                            style={{maxHeight: '200', backgroundColor: 'green'}}
                         >
                             <SampleList
                                 samples={props.samples}

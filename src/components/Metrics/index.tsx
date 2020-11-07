@@ -64,8 +64,8 @@ const Metrics = (props: Props) => {
                             ]}
                             layout={{
                                 title: metric_name,
-                                xaxis: {title: 'Sample size'},
-                                yaxis: {title: 'Metric value'}
+                                xaxis: {title: 'Dataset size'},
+                                yaxis: {title: 'Metric value', range: [0, 1]}
                             }}
                         />
                     })

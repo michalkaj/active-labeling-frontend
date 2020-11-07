@@ -6,7 +6,6 @@ import Stats from "./metric";
 export default class ActiveLearning {
     private QUERY = 'query';
     private CONFIG = 'config';
-    private ANNOTATE = 'annotate';
     private ANNOTATIONS = 'annotations';
     private TEACH = 'teach';
     private METRICS = 'metrics';
@@ -76,7 +75,7 @@ export default class ActiveLearning {
             headers: {'Content-Type': 'application/json'},
             body: samplesJson
         };
-        console.log('url is ', url + this.ANNOTATE)
-        return fetch(url + this.ANNOTATE, requestOptions);
+        console.log('url is ', url + this.ANNOTATIONS)
+        return fetch(url + this.ANNOTATIONS, requestOptions);
     }
 }
