@@ -5,12 +5,14 @@ import Grid from "@material-ui/core/Grid";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import {styled} from "@material-ui/styles";
 import SampleList from "../SampleList";
-import Sample from "../../model/sample";
-import {Divider, Typography} from "@material-ui/core";
+import Sample from "../../utils/sample";
+import {Box, Divider, Paper, Typography} from "@material-ui/core";
 
 
 const SideBarGrid = styled(Grid) ({
-    backgroundColor: '#cfd8dc',
+    // backgroundColor: '#e2f1f8',
+    // borderColor: 'primary.main',
+    border: 2,
     height: '100%',
     // overflow: 'auto'
     // overflow: 'hidden'
@@ -23,11 +25,11 @@ const SideBarItem = styled(Grid) ({
     width: '90%',
 })
 
-// const SampleListContainer = styled(Grid)({
-//     width: '90%',
-//     height: 300,
-//     overflow: 'auto'
-// })
+const MyPaper = styled(Paper)({
+    width: '100%',
+    height: '100%',
+    elevation: 3
+})
 
 type TOption = {
     label: string
@@ -51,89 +53,108 @@ const Sidebar = (props: Props) => {
             container
             xs={3}
             justify='center'
-            alignItems='flex-start'
-            alignContent='flex-start'
+
         >
-            <SideBarItem
-                container
-                direction='row'
-                alignItems='center'
-            >
+            <MyPaper>
                 <Grid
                     item
-                    style={{width: '80%', paddingRight: '3%'}}
+                    container
+                    justify='center'
+                    alignItems='flex-start'
+                    alignContent='flex-start'
                 >
-                    <LinearProgress
-                        variant='determinate'
-                        value={props.progress}
-
-                    />
-                </Grid>
-                <Grid item>
-                    <Button
-                        variant='contained'
-                        color='primary'
-                        disabled={props.progress !== 100}
-                        onClick={props.onTeach}
+                    <SideBarItem
+                        container
+                        direction='row'
+                        alignItems='center'
                     >
-                        Teach
-                    </Button>
-                </Grid>
-            </SideBarItem>
+                        <Grid
+                            item
+                            style={{width: '80%', paddingRight: '3%'}}
+                        >
+                            <LinearProgress
+                                variant='determinate'
+                                value={props.progress}
 
-            {/*<Divider variant='middle' style={{marginTop: 30, marginBottom: 30}}/>*/}
+                            />
+                        </Grid>
+                        <Grid item>
+                            <Button
+                                variant='contained'
+                                color='primary'
+                                disabled={props.progress !== 100}
+                                onClick={props.onTeach}
+                            >
+                                Teach
+                            </Button>
+                        </Grid>
+                    </SideBarItem>
 
-            <SideBarItem
-                // justify='center'
-            >
-                <Grid item style={{width: '100%'}}>
-                    <Typography>Pick a label</Typography>
-                </Grid>
-                <Grid
-                    item
-                    style={{width: '100%', marginTop: 10, marginBottom: 10}}
-                >
-                    <Select
-                        style={{width: '100%'}}
-                        autoFocus={true}
-                        placeholder="Label..."
-                        options={props.labels.map(l => {return {label: l}})}
-                        isMulti={false}
-                        // value={props.selectedLabel.name}
-                        onChange={(option) => handleChange(option, props)}
-                    />
-                </Grid>
-                <Grid
-                    item
-                    container
-                    // justify='center'
-                    style={{width: '100%', overflow: 'auto'}}
-                >
-                    {renderTopLabels(props.labels, 10, props)}
-                </Grid>
-            </SideBarItem>
 
-            {/*<Divider variant='middle' style={{marginTop: 30, marginBottom: 30}}/>*/}
+                    {/*<Divider variant='middle' style={{marginTop: 30, marginBottom: 30}}/>*/}
 
-            <SideBarItem
-                style={{maxHeight: '50%', overflow: 'hidden'}}
-            >
-                <Grid item>
-                    <Typography>Samples in batch</Typography>
-                </Grid>
-                <Grid
-                    container
-                    item
-                    style={{height: '100%'}}
-                >
-                    <SampleList
-                        samples={props.samples}
-                        onSelectSample={props.onSelectSample}
-                        labelColorMapping={props.labelColorMapping}
-                    />
-                </Grid>
-            </SideBarItem>
+                    <SideBarItem
+                        // justify='center'
+                    >
+                        <Grid item style={{width: '100%'}}>
+                            <Typography >
+                                <Box color="textPrimary" fontSize="h6.fontSize" fontWeight='fontWeightBold'>
+                                    Label
+                                </Box>
+                            </Typography>
+                        </Grid>
+                        <Grid
+                            item
+                            style={{width: '100%', marginTop: 10, marginBottom: 10}}
+                        >
+                            <Select
+                                style={{width: '100%'}}
+                                autoFocus={true}
+                                placeholder="Label..."
+                                options={props.labels.map(l => {return {label: l}})}
+                                isMulti={false}
+                                // value={props.selectedLabel.name}
+                                onChange={(option) => handleChange(option, props)}
+                            />
+                        </Grid>
+                        <Grid
+                            item
+                            container
+                            // justify='center'
+                            style={{width: '100%', overflow: 'auto'}}
+                        >
+                            {renderTopLabels(props.labels, 10, props)}
+                        </Grid>
+                    </SideBarItem>
 
+                    {/*<Divider variant='middle' style={{marginTop: 30, marginBottom: 30}}/>*/}
+
+                    <SideBarItem
+                        style={{maxHeight: '50%', overflow: 'hidden'}}
+                    >
+                        <Grid item>
+                            <Typography >
+                                <Box color="textPrimary" fontSize="h6.fontSize" fontWeight='fontWeightBold'>
+                                    Current batch
+                                </Box>
+                            </Typography>
+                        </Grid>
+                        <Grid
+                            container
+                            item
+                            style={{height: '100%'}}
+                        >
+                            <SampleList
+                                samples={props.samples}
+                                onSelectSample={props.onSelectSample}
+                                labelColorMapping={props.labelColorMapping}
+                            />
+                        </Grid>
+                    </SideBarItem>
+
+                </Grid>
+
+            </MyPaper>
         </SideBarGrid>
     )
 }

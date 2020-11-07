@@ -1,4 +1,4 @@
-import convertSample from "../utils/sampleDecoding";
+import convertSample from "./sampleDecoding";
 import Sample from "./sample";
 import Config from "./config";
 import Stats from "./metric";
@@ -27,20 +27,21 @@ export default class ActiveLearning {
         return responseJson;
     }
 
-    fetchConfig = async (url: string): Promise<Config> => {
-        const response = await fetch(url + this.CONFIG);
-        const config = await response.json();
-        return {
-            server_url: url,
-            allowed_labels: config.labels,
-            batch_size: config.batch_size,
-            dataset_name: config.dataset_name,
-            multiclass: config.multiclass == 'true',
-            pool_size: config.pool_size
-        }
-    }
+    // sandConfig = async (url: string): Promise<Config> => {
+    //     const response = await fetch(url + this.CONFIG);
+    //     const config = await response.json();
+    //     return {
+    //         server_url: url,
+    //         allowed_labels: config.labels,
+    //         batch_size: config.batch_size,
+    //         dataset_name: config.dataset_name,
+    //         multiclass: config.multiclass == 'true',
+    //         pool_size: config.pool_size,
+    //         training_set_size: config.training_set_size,
+    //     }
+    // }
 
-    saveConfig = async (url:string, config: Config): Promise<number> => {
+    sendConfig = async (url:string, config: Config): Promise<number> => {
         const configJson = JSON.stringify(config);
 
         const requestOptions = {
@@ -75,6 +76,7 @@ export default class ActiveLearning {
             headers: {'Content-Type': 'application/json'},
             body: samplesJson
         };
+        console.log('url is ', url + this.ANNOTATE)
         return fetch(url + this.ANNOTATE, requestOptions);
     }
 }

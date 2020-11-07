@@ -5,5 +5,6 @@ export default interface Config {
     multiclass: boolean,
     batch_size: number,
     pool_size: number,
+    training_set_size: number,
     [key: string]: any
 }

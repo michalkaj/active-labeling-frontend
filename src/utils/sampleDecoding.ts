@@ -1,4 +1,4 @@
-import Sample from "../model/sample";
+import Sample from "./sample";
 
 export default function (sample: any): Sample {
     return new Sample(

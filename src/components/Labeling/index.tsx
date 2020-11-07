@@ -2,15 +2,14 @@ import React, {useEffect} from 'react';
 import Sidebar from '../Sidebar'
 import ImageClassification from '../ImageClassification'
 import Grid from "@material-ui/core/Grid";
-import Sample from "../../model/sample";
-import Config from "../../model/config";
+import Sample from "../../utils/sample";
+import Config from "../../utils/config";
 import {styled} from "@material-ui/styles";
 import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos';
 import ArrowBackIosIcon from '@material-ui/icons/ArrowBackIos';
-import {LinearProgress} from "@material-ui/core";
 
 const WorkspaceGrid = styled(Grid)({
-    backgroundColor: '#eceff1',
+    // backgroundColor: '#eceff1',
     height: '100%',
     // overflow: 'hidden'
 })

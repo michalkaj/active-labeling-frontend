@@ -1,5 +1,5 @@
 import React, {ReactText} from 'react';
-import Sample from "../../model/sample";
+import Sample from "../../utils/sample";
 import {Grid, List, ListItem, ListItemText, styled} from "@material-ui/core";
 import ReactList from "react-list";
 import Button from "@material-ui/core/Button";

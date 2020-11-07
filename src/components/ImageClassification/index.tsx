@@ -28,7 +28,7 @@ const ImageClassification = (props: Props) => {
         >
             <SampleImage
                 src={props.imageSrc}
-                alt="Label this"
+                onError={(e: any) => {e.target.style.display='none'}}
             />
         </Container>
     )

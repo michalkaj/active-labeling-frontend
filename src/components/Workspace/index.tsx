@@ -5,12 +5,14 @@ import Setup from '../Setup';
 import AppBar from "@material-ui/core/AppBar";
 import Tabs from "@material-ui/core/Tabs";
 import Tab from "@material-ui/core/Tab";
-import Sample from "../../model/sample";
-import ActiveLearning from "../../model/activeLearning";
-import Config from "../../model/config";
+import Sample from "../../utils/sample";
+import ActiveLearning from "../../utils/activeLearning";
+import Config from "../../utils/config";
 import {styled} from "@material-ui/styles";
 import Metrics from "../Metrics";
-import randomHSL from "../../model/utils";
+import randomHSL from "../../utils/utils";
+import loadJson from "../../utils/loadJson";
+import {createMuiTheme, MuiThemeProvider} from "@material-ui/core";
 
 
 const Root = styled('div')({
@@ -18,16 +20,32 @@ const Root = styled('div')({
     margin: 0,
     padding: 0,
     // height: 'calc(100% - 48px)',
-    height: '100%',
-    minHeight: '100vh',
-    backgroundColor: 'red'
+    height: '90%',
+    minHeight: '90vh',
+    backgroundColor: 'red',
+    boxShadow: '3',
+    elevation: 25,
 });
 
 const LabelingPanel = styled(TabPanel)({
     backgroundColor: '#F5F5F5',
     height: '100%'
-    // height: 'calc(100% - 48px)'
 })
+
+
+const theme = createMuiTheme({
+  palette: {
+      primary: {
+          main: '#1565C0'
+      },
+      secondary: {
+          main: '#FFC107'
+      },
+      text: {
+          primary: '#212121'
+      }
+  }
+});
 
 
 export default class Workspace extends Component {
@@ -47,6 +65,7 @@ export default class Workspace extends Component {
             'multiclass': false,
             'batch_size': 10,
             'pool_size': 0.1,
+            'training_set_size': 20,
         },
         labelColors: new Map()
     }
@@ -59,58 +78,61 @@ export default class Workspace extends Component {
 
     render() {
         return (
-            <Root>
-                <AppBar position="static">
-                    <Tabs
+            <MuiThemeProvider theme={theme}>
+                <Root>
+                    <AppBar position="static">
+                        <Tabs
+                            value={this.state.tab}
+                            onChange={this.handleChangeTab}
+                        >
+                            <Tab label="Setup" id="setup-tab"/>
+                            <Tab label="Labeling" id="labeling-tab"/>
+                            <Tab label="Progress" id="progress-tab"/>
+                        </Tabs>
+                    </AppBar>
+                    <LabelingPanel
                         value={this.state.tab}
-                        onChange={this.handleChangeTab}
+                        index={0}
                     >
-                        <Tab label="Setup" id="setup-tab"/>
-                        <Tab label="Labeling" id="labeling-tab"/>
-                        <Tab label="Progress" id="progress-tab"/>
-                    </Tabs>
-                </AppBar>
-                <LabelingPanel
-                    value={this.state.tab}
-                    index={0}
-                >
-                    <Setup
-                        onLoadImages={this.onFetchImages}
-                        config={this.state.config}
-                        fetchConfig={this.fetchConfig}
-                        saveConfig={this.saveConfig}
-                        saveSamples={this.onFetchAnnotations}
-                        updateColorMapping={this.updateColorMapping}
-                    />
-                </LabelingPanel>
-                <LabelingPanel
-                    value={this.state.tab}
-                    index={1}
-                >
-                    <Labeling
-                        onPrev={this.onPrev}
-                        onNext={this.onNext}
-                        onSelectSample={this.onSelectSample}
-                        onLabelClick={this.onLabelClick}
-                        onTeach={this.onTeach}
-                        currentSample={this.getCurrentSample()}
-                        samples={this.state.samples}
-                        config={this.state.config}
-                        labeledInBatch={this.state.labeledInBatch}
-                        fetchSamples={this.onFetchImages}
-                        labelColorMapping={this.state.labelColors}
-                    />
-                </LabelingPanel>
-                <LabelingPanel
-                    value={this.state.tab}
-                    index={2}
-                >
-                    <Metrics
-                        fetchStats={this.fetchStats}
-                        stats={this.state.stats}
-                    />
-                </LabelingPanel>
-            </Root>
+                        <Setup
+                            onLoadImages={this.onFetchImages}
+                            config={this.state.config}
+                            loadAnnotations={e => loadJson(e, this.loadAnnotations)}
+                            loadConfig={e => loadJson(e, this.loadConfig)}
+                            saveConfig={this.saveConfig}
+                            saveSamples={this.onFetchAnnotations}
+                            updateColorMapping={this.updateColorMapping}
+                        />
+                    </LabelingPanel>
+                    <LabelingPanel
+                        value={this.state.tab}
+                        index={1}
+                    >
+                        <Labeling
+                            onPrev={this.onPrev}
+                            onNext={this.onNext}
+                            onSelectSample={this.onSelectSample}
+                            onLabelClick={this.onLabelClick}
+                            onTeach={this.onTeach}
+                            currentSample={this.getCurrentSample()}
+                            samples={this.state.samples}
+                            config={this.state.config}
+                            labeledInBatch={this.state.labeledInBatch}
+                            fetchSamples={this.onFetchImages}
+                            labelColorMapping={this.state.labelColors}
+                        />
+                    </LabelingPanel>
+                    <LabelingPanel
+                        value={this.state.tab}
+                        index={2}
+                    >
+                        <Metrics
+                            fetchStats={this.fetchStats}
+                            stats={this.state.stats}
+                        />
+                    </LabelingPanel>
+                </Root>
+            </MuiThemeProvider>
         )
     }
 
@@ -147,14 +169,29 @@ export default class Workspace extends Component {
             });
     }
 
-    fetchConfig = () => {
-        this.activeLearning
-            .fetchConfig(this.state.config.server_url)
-            .then(config => {
-                const newConfig = {...this.state.config, ...config};
-                this.setState({config: newConfig});
-                console.log('this is new config', newConfig);
-                this.updateColorMapping(newConfig.allowed_labels);
+    loadConfig = (config: any) => {
+        console.log('config', config)
+        const newConfig = {...this.state.config, ...config};
+        this.setState({config: newConfig});
+        console.log('this is new config', newConfig);
+        this.updateColorMapping(newConfig.allowed_labels);
+        // this.activeLearning
+            // .fetchConfig(this.state.config.server_url)
+            // .then(config => {
+            //     const newConfig = {...this.state.config, ...config};
+            //     this.setState({config: newConfig});
+            //     console.log('this is new config', newConfig);
+            //     this.updateColorMapping(newConfig.allowed_labels);
+            // });
+    }
+
+    loadAnnotations = (annots: any) => {
+        const annotations = annots.annotations;
+        const samples  = Object.entries(annotations).map((key: any) =>
+            new Sample(key[0], '', '', key[1]));
+        this.activeLearning.annotate(this.state.config.server_url, samples)
+            .then(result => {
+                console.log(result);
             });
     }
 
@@ -166,12 +203,10 @@ export default class Workspace extends Component {
             });
     }
 
-
     onTeach = () => {
         this.activeLearning
             .teach(this.state.config.server_url, this.state.samples)
             .then(response => {
-                console.log('onTeach respoonbse: :::::::', response);
                 if (response.ok) {
                     this.onFetchImages();
                 }

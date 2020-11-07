@@ -4,16 +4,17 @@ import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Grid from '@material-ui/core/Grid';
 import TagsInput from "react-tagsinput";
-import Config from "../../model/config";
+import Config from "../../utils/config";
 import {styled} from "@material-ui/styles";
-import {FormControl, Input, Radio, RadioGroup, Typography} from "@material-ui/core";
+import {Box, FormControl, Input, Paper, Radio, RadioGroup, Typography} from "@material-ui/core";
 import 'App.css'
 import Button from "@material-ui/core/Button";
 import Slider from "@material-ui/core/Slider";
+import loadJson from "../../utils/loadJson";
 
 
 const MainForm = styled(Grid)({
-    width: '50%'
+    width: '50%',
 });
 
 const BatchSizeInput = styled(Input)({
@@ -24,16 +25,27 @@ const TagsInputGrid = styled(Grid)({
     height: '100px'
 });
 
+const SetupItem = styled(Grid)({
+    paddingBottom: '2%',
+})
+
 
 type Props = {
     onLoadImages: () => void,
-    fetchConfig: () => void,
+    loadConfig: (event: any) => void,
+    loadAnnotations: (event: any) => void,
     saveConfig: (name: string, value: any) => void,
     updateColorMapping: (labelNames: string[]) => void,
     saveSamples: () => void,
     config: Config
 }
 
+const MyPaper = styled(Paper)({
+    width: '100%',
+    height: '100%',
+    elevation: 3,
+    padding: '5%'
+})
 
 const Setup = (props: Props) => {
     console.log('stup', props.config);
@@ -46,19 +58,28 @@ const Setup = (props: Props) => {
                 container
                 spacing={3}
             >
-                <Grid item container>
-                    <Typography variant='h6' gutterBottom>Active learning backend URL</Typography>
+                <MyPaper>
+                <SetupItem item container>
+                    <Typography >
+                        <Box color="textPrimary" fontSize="h6.fontSize" fontWeight='fontWeightBold'>
+                            Backend URL
+                        </Box>
+                    </Typography>
                     <TextField
-                        value={props.config.active_url}
+                        value={props.config.server_url}
                         margin='normal'
                         fullWidth
                         name='activeUrl'
                         onChange={(event) => props.saveConfig('server_url', event.target.value)}
                     />
-                </Grid>
+                </SetupItem>
 
-                <Grid item container>
-                    <Typography variant='h6' gutterBottom>Dataset name</Typography>
+                <SetupItem item container>
+                    <Typography >
+                        <Box color="textPrimary" fontSize="h6.fontSize" fontWeight='fontWeightBold'>
+                            Dataset name
+                        </Box>
+                    </Typography>
                     <TextField
                         value={props.config.dataset_name}
                         margin='normal'
@@ -66,22 +87,15 @@ const Setup = (props: Props) => {
                         name='datasetName'
                         onChange={(event) => {props.saveConfig('dataset_name', event.target.value)}}
                     />
-                </Grid>
+                </SetupItem>
 
-                <Grid item container>
-                    <FormControl component="fieldset">
-                        <Typography variant='h6' gutterBottom>Allow multiple labels per image</Typography>
-                        <RadioGroup row name="multiclass" value={props.config.multiclass}
-                                    onChange={(event) => props.saveConfig('multiclass', event.target.value)}>
-                            <FormControlLabel value="true" control={<Radio />} label="Yes" />
-                            <FormControlLabel value="false" control={<Radio />} label="No" />
-                        </RadioGroup>
-                    </FormControl>
-                </Grid>
-
-                <Grid item container>
+                <SetupItem item container>
                     <Grid>
-                        <Typography variant='h6' gutterBottom>Add labels</Typography>
+                        <Typography >
+                            <Box color="textPrimary" fontSize="h6.fontSize" fontWeight='fontWeightBold'>
+                                Labels
+                            </Box>
+                        </Typography>
                     </Grid>
                     <TagsInputGrid container>
                         <TagsInput
@@ -94,11 +108,48 @@ const Setup = (props: Props) => {
                             addOnBlur={true}
                             addOnPaste={true}/>
                     </TagsInputGrid>
-                </Grid>
+                </SetupItem>
 
-                <Grid item container>
+                <SetupItem item container>
                     <Grid>
-                        <Typography variant='h6' gutterBottom>Query batch size</Typography>
+                        <Typography >
+                            <Box color="textPrimary" fontSize="h6.fontSize" fontWeight='fontWeightBold'>
+                                Initial training set size
+                            </Box>
+                        </Typography>
+                    </Grid>
+                    <Grid container spacing={2} alignItems="center">
+                        <Grid item xs>
+                            <Slider
+                                defaultValue={100}
+                                step={10}
+                                marks
+                                min={10}
+                                max={1000}
+                                onChange={(_, value) => props.saveConfig('training_set_size', value)}
+                            />
+                        </Grid>
+                        <Grid item>
+                            <BatchSizeInput
+                                value={props.config.training_set_size}
+                                margin="dense"
+                                inputProps={{
+                                    step: 10,
+                                    min: 10,
+                                    max: 1000,
+                                    type: 'number',
+                                }}
+                            />
+                        </Grid>
+                    </Grid>
+                </SetupItem>
+                <SetupItem item container>
+                    <Grid>
+                        <Typography >
+                            <Box color="textPrimary" fontSize="h6.fontSize" fontWeight='fontWeightBold'>
+                                Query size
+                            </Box>
+                        </Typography>
                     </Grid>
                     <Grid container spacing={2} alignItems="center">
                         <Grid item xs>
@@ -124,48 +175,72 @@ const Setup = (props: Props) => {
                             />
                         </Grid>
                     </Grid>
-                </Grid>
+                </SetupItem>
 
-                <Grid item container>
+                <SetupItem item container>
                     <Grid>
-                        <Typography variant='h6' gutterBottom>Relative pool size</Typography>
+                        <Typography >
+                            <Box color="textPrimary" fontSize="h6.fontSize" fontWeight='fontWeightBold'>
+                                Relative pool size
+                            </Box>
+                        </Typography>
                     </Grid>
                     <Grid container spacing={2} alignItems="center">
                         <Grid item xs>
                             <Slider
-                                defaultValue={15}
-                                step={5}
+                                defaultValue={0.2}
+                                step={0.1}
                                 marks
-                                min={5}
-                                max={100}
-                                onChange={(_, value) => props.saveConfig('batch_size', value)}
+                                min={0}
+                                max={1}
+                                onChange={(_, value) => props.saveConfig('pool_size', value)}
                             />
                         </Grid>
                         <Grid item>
                             <BatchSizeInput
-                                value={props.config.batch_size / 100}
+                                value={props.config.pool_size}
                                 margin="dense"
                                 inputProps={{
-                                    step: 1,
+                                    step: 0.01,
                                     min: 0,
-                                    max: 100,
+                                    max: 1,
                                     type: 'number',
                                 }}
                             />
                         </Grid>
                     </Grid>
-                </Grid>
+                </SetupItem>
 
                 <Grid item container justify={"space-evenly"}>
-                    <Button
+                   <Button
                         variant="contained"
                         color="primary"
-                        onClick={props.fetchConfig}>Fetch config</Button>
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={props.saveSamples}>Save annotations</Button>
+                        component="label"
+                   >
+                       Load config
+                       <input
+                            type='file'
+                            onChange={props.loadConfig}
+                            style={{ display: "none" }}
+                            />
+                        </Button>
+                   <Button
+                       variant="contained"
+                       color="primary"
+                       component="label">
+                       Load Annotations
+                      <input
+                        type='file'
+                        onChange={props.loadAnnotations}
+                        style={{ display: "none" }}
+                      />
+                   </Button>
+                   <Button
+                       variant="contained"
+                       color="primary"
+                       onClick={props.saveSamples}>Save annotations</Button>
                 </Grid>
+                </MyPaper>
             </MainForm>
         </Grid>
     )
