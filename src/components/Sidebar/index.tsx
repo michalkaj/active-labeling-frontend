@@ -121,9 +121,7 @@ const Sidebar = (props: Props) => {
                         </Grid>
                     </SideBarItem>
 
-                    <SideBarItem
-                        style={{backgroundColor: 'blue'}}
-                    >
+                    <SideBarItem>
                         <Grid item>
                             <Typography >
                                 <Box color="textPrimary" fontSize="h6.fontSize" fontWeight='fontWeightBold'>
@@ -134,7 +132,6 @@ const Sidebar = (props: Props) => {
                         <Grid
                             container
                             item
-                            style={{maxHeight: '200', backgroundColor: 'green'}}
                         >
                             <SampleList
                                 samples={props.samples}
